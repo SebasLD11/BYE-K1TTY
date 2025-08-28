@@ -11,6 +11,6 @@ import { environment } from '../../environments/environment';
 export class ProductService {
   private http = inject(HttpClient);
   list(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${environment.apiUrl}/api/products`);
-  }
+  return this.http.get<Product[]>(`${environment.apiUrl}/api/products`);
+}
 }
