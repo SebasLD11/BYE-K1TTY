@@ -1,0 +1,86 @@
+<nav class="nav">
+<img [src]="p.images[0]" [alt]="p.name" />
+<div class="thumbs">
+<img *ngFor="let src of p.images" [src]="src" alt="thumb" />
+</div>
+</div>
+<div class="info">
+<div>
+<h3>{{ p.name }}</h3>
+<p class="price">{{ p.price | currency:'EUR' }}</p>
+</div>
+<div class="right">
+<span class="tag">{{ p.tag }}</span>
+<button class="add" (click)="cartSvc.add(p)">+ Añadir</button>
+</div>
+</div>
+</article>
+</div>
+</section>
+
+
+<section *ngIf="tab()==='about'" class="about">
+<h2>Sobre Bye K1tty</h2>
+<p>Inspirado en la dualidad del blanco y negro, con acentos dorados que representan fuerza y elegancia. Diseño urbano premium, edición limitada.</p>
+</section>
+</main>
+
+
+<!-- Modal producto -->
+<div class="modal-backdrop" *ngIf="selected" (click)="selected=null"></div>
+<div class="modal" *ngIf="selected">
+<div class="modal-body" (click)="$event.stopPropagation()">
+<div class="viewer">
+<button class="nav prev" (click)="prev()">‹</button>
+<img [src]="selected!.images[imgIndex]" [alt]="selected!.name" />
+<button class="nav next" (click)="next()">›</button>
+</div>
+<div class="thumbs-lg">
+<button *ngFor="let src of selected!.images; let i = index" [class.active]="i===imgIndex" (click)="imgIndex=i">
+<img [src]="src" [alt]="'thumb-'+i" />
+</button>
+</div>
+<div class="meta">
+<h3>{{ selected!.name }}</h3>
+<div class="row">
+<span class="price">{{ selected!.price | currency:'EUR' }}</span>
+<button class="cta" (click)="addFromModal()">Añadir al carrito</button>
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- Drawer carrito -->
+<div class="drawer" [class.open]="cartOpen">
+<header>
+<h3>Tu carrito</h3>
+<button (click)="cartOpen=false">✕</button>
+</header>
+<div class="content">
+<div class="item" *ngFor="let it of (cartSvc.items$|async)">
+<img [src]="it.img" alt="thumb" />
+<div class="details">
+<p class="name">{{ it.name }}</p>
+<p class="muted">{{ it.price | currency:'EUR' }}</p>
+<div class="qty">
+<button (click)="cartSvc.dec(it.id)">-</button>
+<span>{{ it.qty }}</span>
+<button (click)="cartSvc.inc(it.id)">+</button>
+<button class="muted" (click)="cartSvc.remove(it.id)">Eliminar</button>
+</div>
+</div>
+</div>
+<p class="empty" *ngIf="!(cartSvc.items$|async)?.length">Aún no añadiste productos.</p>
+</div>
+<footer>
+<div class="row">
+<span>Total</span>
+<strong>{{ cartSvc.total() | currency:'EUR' }}</strong>
+</div>
+<div class="row gap">
+<button (click)="cartSvc.clear()">Vaciar</button>
+<button [disabled]="!(cartSvc.items$|async)?.length" class="cta" (click)="checkoutNow()">Checkout</button>
+</div>
+</footer>
+</div>
