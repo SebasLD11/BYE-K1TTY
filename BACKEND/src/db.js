@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 function mask(uri='') {
   try {
-    const u = new URL(uri); if (u.password) u.password = '***'; return u.toString();
+    const u = new URL(uri); if (u.password) u.password = 'VGS_bk_admin'; return u.toString();
   } catch { return uri.slice(0, 40) + '...'; }
 }
 
