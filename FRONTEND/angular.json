@@ -45,5 +45,5 @@
       }
     }
   },
-  "cli": { "analytics": true }
+  "cli": { "analytics": "e4c75f3f-988c-4e3e-a991-13c844752476" }
 }
