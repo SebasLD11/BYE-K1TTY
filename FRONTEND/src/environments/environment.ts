@@ -1,5 +1,5 @@
 export const environment = {
-production: false,
-apiUrl: 'http://localhost:5000', // backend
-useLocalProducts: false
+  production: true,
+  apiUrl: 'https://tu-backend.domain.com', // <- apunta a tu API pública
+  useLocalProducts: false
 };

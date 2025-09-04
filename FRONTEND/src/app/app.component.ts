@@ -1,6 +1,5 @@
 import { Component, HostBinding, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
@@ -10,7 +9,7 @@ import { Product } from './models/product.model';
 @Component({
 selector: 'app-root',
 standalone: true,
-imports: [CommonModule, HttpClient],
+imports: [CommonModule],
 templateUrl: './app.component.html',
 styleUrls: ['./app.component.scss']
 })

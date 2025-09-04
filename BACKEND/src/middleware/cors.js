@@ -1,9 +1,9 @@
 const cors = require('cors');
 
 const allowed = [
-process.env.FRONT_URL,
-'http://localhost:4200',
-'https://your-vercel-domain.vercel.app'
+    process.env.FRONT_URL,
+    'https://tu-dominio-frontend.com',
+    'https://tu-preview.vercel.app'
 ].filter(Boolean);
 
 const corsOpts = {

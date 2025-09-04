@@ -3,8 +3,7 @@ require('dotenv').config();
 const { connectDB } = require('../src/db');
 const Product = require('../src/models/Product');
 
-const FRONT = (process.env.FRONT_URL || 'http://localhost:4200').replace(/\/$/, '');
-const img = p => `${FRONT}/${p.replace(/^\/?/, '')}`; // absolutiza: assets/img/...http://.../assets/img/...
+const img = p => p.replace(/^\/?/, ''); // guarda 'assets/img/xxx.png'
 
 const DATA = [
   {

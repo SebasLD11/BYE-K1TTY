@@ -1,4 +1,5 @@
 export const environment = {
-production: true,
-apiUrl: 'https://<tu-backend>.herokuapp.com' // o Render
+  production: true,
+  apiUrl: 'https://tu-backend.domain.com', // <- apunta a tu API pública
+  useLocalProducts: false
 };
