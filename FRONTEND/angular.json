@@ -15,6 +15,7 @@
             "outputPath": "dist/FRONTEND",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets", "public"],
             "styles": ["src/styles.scss"],
             "inlineStyleLanguage": "scss"
