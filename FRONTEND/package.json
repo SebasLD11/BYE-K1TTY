@@ -5,7 +5,7 @@
 "scripts": {
   "ng": "ng",
   "start": "ng serve --proxy-config src/proxy.conf.json",
-  "build": "ng build --configuration development && echo '\n== Dist ==' && ls -la dist/FRONTEND",
+  "build": "ng build --configuration production && echo '\n== Dist ==' && ls -la dist/FRONTEND",
   "watch": "ng build --watch --configuration development",
   "test": "ng test"
   },

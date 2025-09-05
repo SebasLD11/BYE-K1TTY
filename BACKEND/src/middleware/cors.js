@@ -2,8 +2,7 @@ const cors = require('cors');
 
 const allowed = [
     process.env.FRONT_URL,
-    'https://tu-dominio-frontend.com',
-    'https://tu-preview.vercel.app'
+    'https://bye-k1-tty.vercel.app/'
 ].filter(Boolean);
 
 const corsOpts = {

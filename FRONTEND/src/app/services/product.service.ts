@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product } from '../models/product.model';
 // Usa UNA de las dos líneas siguientes:
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 // import { environment } from '@environments/environment';
 
 @Injectable({ providedIn: 'root' })
