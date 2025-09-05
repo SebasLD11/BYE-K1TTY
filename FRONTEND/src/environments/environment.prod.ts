@@ -1,7 +1,7 @@
 // src/environments/environment.prod.ts
 export const environment = {
   production: true,
-  apiUrl: '',                 // ← sin backend en prod por ahora
+  apiUrl: 'https://bye-k1itty-0585f0167cb4.herokuapp.com',                 // ← sin backend en prod por ahora
   useLocalProducts: false,     // ← activamos mock local
-  checkoutEnabled: false      // ← desactiva botón Checkout
+  checkoutEnabled: true      // ← desactiva botón Checkout
 };

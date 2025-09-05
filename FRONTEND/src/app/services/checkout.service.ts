@@ -1,17 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment.prod';
-import { of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CheckoutService {
   private http = inject(HttpClient);
 
   createSession(items: {id:string; qty:number}[]) {
-    if (!environment.checkoutEnabled || !environment.apiUrl) {
-      // Evita llamadas en Vercel sin backend
-      return of({ url: '#' });
-    }
-    return this.http.post<{url:string}>(`${environment.apiUrl}/api/pay/stripe/checkout`, { items });
+    const base = environment.apiUrl.replace(/\/$/, '');
+    return this.http.post<{url:string}>(`${base}/api/pay/stripe/checkout`, { items });
   }
 }
