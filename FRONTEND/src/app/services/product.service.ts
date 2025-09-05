@@ -10,7 +10,13 @@ import { environment } from '../../environments/environment.prod';
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);
+
   list(): Observable<Product[]> {
-  return this.http.get<Product[]>(`${environment.apiUrl}/api/products`);
-}
+    if (environment.useLocalProducts) {
+      // Sirve desde assets en Vercel (estático)
+      return this.http.get<Product[]>('/assets/mock/products.json');
+    }
+    // Cuando tengas backend público, apiUrl no vacío
+    return this.http.get<Product[]>(`${environment.apiUrl}/api/products`);
+  }
 }

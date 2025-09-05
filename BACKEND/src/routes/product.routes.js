@@ -1,15 +1,22 @@
-// src/routes/product.routes.js
-const router = require('express').Router();
-const Product = require('../models/Product');
+// GET /api/products -> lee de Atlas usando MONGO_URI
+const { connectDB } = require('./_lib/db');
+const Product = require('./_models/Product');
 
-// copia el mismo DATA del seed.js o impórtalo desde un módulo común
 const USE_MOCK = process.env.USE_MOCK_PRODUCTS === 'true';
-const DATA = [ /* ...tus objetos con images... */ ];
 
-router.get('/', async (_req,res) => {
-  if (USE_MOCK) return res.json(DATA);
-  const products = await Product.find().lean();
-  res.json(products);
-});
+module.exports = async (req, res) => {
+  try {
+    if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
-module.exports = router;
+    if (USE_MOCK) {
+      return res.status(200).json([]); // o tu mock temporal
+    }
+
+    await connectDB();
+    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    res.status(200).json(products);
+  } catch (e) {
+    console.error('[products]', e);
+    res.status(500).json({ error: 'server_error' });
+  }
+};
