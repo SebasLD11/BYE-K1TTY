@@ -6,7 +6,7 @@
     "ng":"ng",
     "start":"ng serve --proxy-config src/proxy.conf.json",
     "build":"ng build --configuration production",
-    "postbuild":"echo '\n== Dist ==' && ls -la dist/FRONTEND",
+    "postbuild": "echo '\n== Dist tree ==' && (ls -la dist || true) && (ls -la dist/FRONTEND || true) && (ls -la dist/FRONTEND/browser || true)",
     "watch":"ng build --watch --configuration development",
     "test":"ng test"
 },
