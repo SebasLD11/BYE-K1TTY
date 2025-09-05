@@ -1,16 +1,17 @@
 const cors = require('cors');
 
-const normalize = (u) => (u || '').replace(/\/$/, '');
+function norm(s=''){ return s.replace(/\/+$/,''); }
 
 const allowed = [
-  process.env.FRONT_URL,        // ej: https://tu-front.vercel.app  (sin barra)
-  'http://localhost:4200'
-].filter(Boolean).map(normalize);
+  process.env.FRONT_URL,                 // p.ej. https://bye-k1tty.vercel.app
+  'http://localhost:4200',
+  'http://127.0.0.1:4200'
+].filter(Boolean).map(norm);
 
 const corsOpts = {
   origin(origin, cb) {
     if (!origin) return cb(null, true); // curl/Postman
-    const o = normalize(origin);
+    const o = norm(origin);
     return allowed.includes(o) ? cb(null, true) : cb(new Error('CORS'));
   },
   credentials: true,

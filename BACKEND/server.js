@@ -14,11 +14,8 @@ const checkoutRoutes = require('./src/routes/checkout.routes');
 const checkoutCtrl = require('./src/controllers/checkout.controller');
 
 const app = express();
-
-// DB
 connectDB();
 
-// Core middlewares
 app.set('trust proxy', 1);
 app.use(corsMw);
 app.use(helmet());
@@ -26,21 +23,19 @@ app.use(compression());
 app.use(cookieParser());
 app.use(morgan('tiny'));
 
-// Webhook Stripe: ANTES del JSON parser (raw body)
+// Stripe webhook: RAW body ANTES del JSON parser
 app.post('/api/pay/stripe/webhook',
   express.raw({ type: 'application/json' }),
   checkoutCtrl.webhook
 );
 
-// JSON parser para el resto
+// JSON para el resto
 app.use(express.json({ limit: '1mb' }));
 
-// Routes
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));
 app.use('/api/products', productRoutes);
 app.use('/api/pay', checkoutRoutes);
 
-// Errors
 app.use(errorMw);
 
 const PORT = process.env.PORT || 5000;

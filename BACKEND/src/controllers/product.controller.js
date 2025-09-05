@@ -1,16 +1,13 @@
-// src/controllers/product.controller.js
 const Product = require('../models/Product');
 
 const FRONT = (process.env.FRONT_URL || 'http://localhost:4200').replace(/\/$/, '');
 
-// Convierte 'assets/img/...' → 'https://tu-front.vercel.app/assets/img/...'
 function absUrl(path) {
   if (!path) return path;
   if (/^https?:\/\//i.test(path)) return path;
-  return `${FRONT}/${String(path).replace(/^\//, '')}`;
+  return `${FRONT}/${String(path).replace(/^\//, '')}`; // 'assets/img/x.png' -> 'https://front/.../assets/img/x.png'
 }
 
-// Normaliza un producto para respuesta pública
 function serialize(p) {
   return {
     _id: String(p._id),
@@ -23,17 +20,10 @@ function serialize(p) {
   };
 }
 
-/**
- * GET /api/products
- * Query:
- *  - tag: new|best|sale|drop
- *  - page: number (>=1)
- *  - limit: number (1..100)
- *  - sort: recent|price_asc|price_desc
- */
+// GET /api/products  (por defecto devuelve ARRAY para ser 100% compatible con tu Angular)
 exports.list = async (req, res, next) => {
   try {
-    const { tag, page = 1, limit = 24, sort = 'recent' } = req.query;
+    const { tag, page = 1, limit = 24, sort = 'recent', meta } = req.query;
 
     const q = {};
     if (tag && ['new', 'best', 'sale', 'drop'].includes(String(tag))) q.tag = tag;
@@ -51,24 +41,19 @@ exports.list = async (req, res, next) => {
       Product.countDocuments(q)
     ]);
 
-    // Cache amable para listados (ajusta a tu gusto)
     res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
     res.set('Vary', 'Origin');
 
-    res.json({
-      page: pg,
-      limit: lim,
-      total,
-      items: items.map(serialize),
-    });
-  } catch (e) {
-    next(e);
-  }
+    const payloadItems = items.map(serialize);
+    // COMPATIBILIDAD: si NO piden meta, devolvemos array simple
+    if (!meta) return res.json(payloadItems);
+
+    // Si agregas ?meta=1 obtienes objeto con paginación
+    res.json({ page: pg, limit: lim, total, items: payloadItems });
+  } catch (e) { next(e); }
 };
 
-/**
- * GET /api/products/:id
- */
+// GET /api/products/:id
 exports.getOne = async (req, res, next) => {
   try {
     const id = String(req.params.id || '');
@@ -79,7 +64,5 @@ exports.getOne = async (req, res, next) => {
 
     res.set('Cache-Control', 'public, max-age=120, s-maxage=600');
     res.json(serialize(doc));
-  } catch (e) {
-    next(e);
-  }
+  } catch (e) { next(e); }
 };
