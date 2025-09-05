@@ -1,0 +1,8 @@
+{
+  "framework": "angular",
+  "buildCommand": "npm run build -- --configuration production",
+  "outputDirectory": "dist/FRONTEND",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
