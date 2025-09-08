@@ -79,8 +79,8 @@
 
     <div class="thumbs-lg">
       <button *ngFor="let src of selected!.images; let i = index"
-              [class.active]="i===imgIndex"
-              (click)="imgIndex=i">
+          [class.active]="i===imgIndex"
+          (click)="imgIndex=i">
         <img [src]="src" [alt]="'thumb-'+i" />
       </button>
     </div>
