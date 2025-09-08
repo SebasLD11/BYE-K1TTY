@@ -39,12 +39,31 @@ exports.createCheckout = async (req, res, next) => {
       mode: 'payment',
       payment_method_types: ['card'],
       line_items,
-      success_url: `${FRONT}/?success=1`,
+      success_url: `${FRONT}/?success=1&session_id={CHECKOUT_SESSION_ID}`, // 👈 importante
       cancel_url: `${FRONT}/?cancel=1`,
       metadata: { orderId: String(order._id) },
     });
 
     await Order.findByIdAndUpdate(order._id, { stripeSessionId: session.id });
     res.status(200).json({ url: session.url });
+  } catch (e) { next(e); }
+};
+// GET /api/pay/stripe/confirm?session_id=cs_test_...
+exports.confirm = async (req, res, next) => {
+  try {
+    const { session_id } = req.query;
+    if (!session_id) return res.status(400).json({ error: 'missing_session_id' });
+
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+
+    if (session.payment_status === 'paid') {
+      await Order.findOneAndUpdate(
+        { stripeSessionId: session.id },
+        { status: 'paid' }
+      );
+      return res.json({ ok: true, paid: true });
+    }
+
+    res.json({ ok: true, paid: false, status: session.payment_status });
   } catch (e) { next(e); }
 };
