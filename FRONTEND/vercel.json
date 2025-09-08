@@ -1,7 +1,10 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
+  "version": 2,
+  "framework": "angular",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/FRONTEND",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": "https://bye-k1tty-2ecb3d391bfa.herokuapp.com/api/$1" },
+    { "source": "/(.*)", "destination": "/" }
   ]
 }

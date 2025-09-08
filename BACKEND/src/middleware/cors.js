@@ -4,7 +4,6 @@ const norm = s => (s||'').replace(/\/+$/,''); // quita / final
 const allowed = [
   process.env.FRONT_URL,         // e.g. https://bye-k1tty.vercel.app
   'http://localhost:4200',
-  'http://127.0.0.1:4200'
 ].filter(Boolean).map(norm);
 
 module.exports = cors({
