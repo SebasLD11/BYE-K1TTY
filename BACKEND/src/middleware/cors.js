@@ -3,7 +3,7 @@ const norm = s => (s||'').replace(/\/+$/,''); // quita / final
 
 const allowed = [
   process.env.FRONT_URL,         // e.g. https://bye-k1tty.vercel.app
-  'http://localhost:4200',
+  'https://bye-k1tty-vgs-distribution.vercel.app',
 ].filter(Boolean).map(norm);
 
 module.exports = cors({

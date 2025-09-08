@@ -18,7 +18,7 @@ export class AppComponent {
     cartSvc = inject(CartService);
     private checkout = inject(CheckoutService);
 
-    @HostBinding('class.dark') dark = localStorage.getItem('bk-theme') === 'dark';
+    @HostBinding('class.dark') dark = typeof window !== 'undefined' && localStorage.getItem('bk-theme') === 'dark';
 
     tab = signal<'home'|'shop'|'about'>('home');
     products = signal<Product[]>([]);
