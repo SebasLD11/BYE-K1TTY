@@ -11,7 +11,6 @@ const errorMw = require('./src/middleware/error');
 
 const productRoutes = require('./src/routes/product.routes');
 const checkoutRoutes = require('./src/routes/checkout.routes');
-const checkoutCtrl = require('./src/controllers/checkout.controller');
 
 const app = express();
 connectDB();
@@ -22,12 +21,6 @@ app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
 app.use(morgan('tiny'));
-
-// Stripe webhook: RAW body ANTES del JSON parser
-app.post('/api/pay/stripe/webhook',
-  express.raw({ type: 'application/json' }),
-  checkoutCtrl.webhook
-);
 
 // JSON para el resto
 app.use(express.json({ limit: '1mb' }));

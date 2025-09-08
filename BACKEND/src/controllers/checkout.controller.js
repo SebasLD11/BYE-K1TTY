@@ -48,23 +48,3 @@ exports.createCheckout = async (req, res, next) => {
     res.status(200).json({ url: session.url });
   } catch (e) { next(e); }
 };
-
-// POST /api/pay/stripe/webhook  (opcional)
-exports.webhook = async (req, res) => {
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!secret) return res.status(200).json({ skipped: true }); // sin configurar
-
-  const sig = req.headers['stripe-signature'];
-  try {
-    const event = stripe.webhooks.constructEvent(req.body, sig, secret);
-
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      await Order.findOneAndUpdate({ stripeSessionId: session.id }, { status: 'paid' });
-    }
-    res.json({ received: true });
-  } catch (err) {
-    console.error('[Stripe webhook] verification failed', err.message);
-    res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-};
