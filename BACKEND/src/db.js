@@ -1,19 +1,19 @@
+// src/db.js
 const mongoose = require('mongoose');
 
-let cached = global._mongoose;
-if (!cached) cached = global._mongoose = { conn: null, promise: null };
-
 async function connectDB() {
-  if (cached.conn) return cached.conn;
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGO_URI, {
-      dbName: 'bye-k1tty',
-      maxPoolSize: 5,
-      serverSelectionTimeoutMS: 5000,
-    }).then(m => m);
-  }
-  cached.conn = await cached.promise;
-  return cached.conn;
-}
+  const uri = process.env.MONGO_URI;
+  if (!uri) throw new Error('MONGO_URI missing');
 
+  const redacted = uri.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@');
+  console.log('[DB] connecting to', redacted);
+
+  await mongoose.connect(uri, {
+    dbName: 'bye-k1tty',
+    maxPoolSize: 10,
+    serverSelectionTimeoutMS: 10000
+  });
+
+  console.log('[DB] Connected to MongoDB Atlas');
+}
 module.exports = { connectDB };
