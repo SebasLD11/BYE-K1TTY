@@ -1,64 +1,130 @@
-<!-- NAV -->
-<nav class="nav">
-  <div class="brand">
-    <div class="logo">BK</div>
-    <span>Bye K1tty</span>
+<!-- TOP NAV (renombrado) -->
+<header class="topnav">
+  <div class="container nav-bar">
+    <div class="brand">
+      <img class="logo-img" src="assets/img/Logo.BK.png" alt="Bye K1tty" />
+      <span class="brand-text">BYE K1TTY</span>
+    </div>
+    <div class="actions">
+      <button [class.active]="tab()==='home'" (click)="tab.set('home')">Home</button>
+      <button [class.active]="tab()==='shop'" (click)="tab.set('shop')">Shop</button>
+      <button [class.active]="tab()==='about'" (click)="tab.set('about')">About</button>
+       <!-- Tema con icono y estado accesible -->
+      <button class="theme" (click)="toggleTheme()" [attr.aria-pressed]="dark" [title]="dark ? 'Cambiar a claro' : 'Cambiar a oscuro'">
+        {{ dark ? '☀️' : '🌙' }}
+      </button>
+      <button class="cart" (click)="cartOpen=true">
+        Carrito
+        <span class="badge" *ngIf="(cartSvc.items$|async)?.length">
+          {{ (cartSvc.items$|async)?.length }}
+        </span>
+      </button>
+    </div>
   </div>
-  <div class="actions">
-    <button [class.active]="tab()==='home'" (click)="tab.set('home')">Home</button>
-    <button [class.active]="tab()==='shop'" (click)="tab.set('shop')">Shop</button>
-    <button [class.active]="tab()==='about'" (click)="tab.set('about')">About</button>
-    <button class="theme" (click)="toggleTheme()">Tema</button>
-    <button class="cart" (click)="cartOpen=true">
-      Carrito
-      <span class="badge" *ngIf="(cartSvc.items$|async)?.length">
-        {{ (cartSvc.items$|async)?.length }}
-      </span>
-    </button>
-  </div>
-</nav>
+</header>
 
-<main>
+<main class="container">
   <!-- HOME -->
   <section *ngIf="tab()==='home'" class="hero">
     <div>
       <h1>Bienvenido/a a BYE K1TTY</h1>
-      <p>Aquí encontrarás al detalle cada pieza exclusiva y colecciones que se lanzan. Espero que disfrutes de la experiencia y el paso por la tienda. Encontrarás diseños que te volarán la 
-        cabeza además de encontrar tu favorito y si tienes preguntas, no dudes en contactar. También podrás suscribirte a la newsletter para ser el primero en conocer las novedades.
+      <p>
+        Aquí encontrarás al detalle cada pieza exclusiva y colecciones que se lanzan. Espero que disfrutes de la
+        experiencia y el paso por la tienda. Encontrarás diseños únicos que no verás en otro lugar, además de encontrar tu favorito
+        y si tienes preguntas, no dudes en contactar. También podrás suscribirte a la newsletter para ser el primero en
+        conocer las novedades.
       </p>
       <button class="cta" (click)="tab.set('shop')">Ver tienda</button>
     </div>
   </section>
 
   <!-- SHOP -->
-  <section *ngIf="tab()==='shop'">
-    <div class="shop-header">
+  <section *ngIf="tab()==='shop'" class="shop">
+    <div class="shop-header container">
       <h2>Tienda</h2>
-      <div class="tags">
-        <span>new</span><span>best</span><span>drop</span>
+      <div class="right-actions">
+        <div class="tags">
+          <span *ngFor="let t of allTags()">#{{ t }}</span>
+        </div>
+        <button class="filters-toggle" (click)="filtersOpen = true">Filtros</button>
       </div>
     </div>
 
-    <div class="grid">
-      <article class="card" *ngFor="let p of products()">
-        <div class="media" (click)="openProduct(p)">
-          <img [src]="p.images?.[0]" [alt]="p.name" (error)="onImgErr($event)" />
-          <div class="thumbs">
-            <img *ngFor="let src of p.images" [src]="src" alt="thumb" (error)="onImgErr($event)"/>
+    <!-- backdrop móvil -->
+    <div class="filters-backdrop" *ngIf="filtersOpen" (click)="filtersOpen=false"></div>
+
+    <div class="shop-layout container">
+      <!-- ASIDE: Filtros -->
+      <aside class="filters" [class.open]="filtersOpen">
+        <header class="filters-head">
+          <h3>Filtros</h3>
+          <button class="filters-close" (click)="filtersOpen=false">✕</button>
+        </header>
+
+        <div class="filters-group">
+          <label>Buscar</label>
+          <input
+            type="search"
+            placeholder="Nombre del producto…"
+            [value]="search()"
+            (input)="search.set(($event.target as HTMLInputElement).value)" />
+        </div>
+
+        <div class="filters-group">
+          <label>Etiquetas</label>
+          <div class="chips">
+            <button
+              *ngFor="let t of allTags()"
+              class="chip"
+              [class.active]="tagChecked(t)"
+              (click)="toggleTag(t)">
+              {{ t }}
+            </button>
           </div>
         </div>
 
-        <div class="info">
-          <div>
-            <h3>{{ p.name }}</h3>
-            <p class="price">{{ p.price | currency:'EUR' }}</p>
+        <div class="filters-group">
+          <label>Precio</label>
+          <div class="price-row">
+            <input type="number" [min]="priceMin()" [max]="priceMax()" [value]="filterMin()"
+                 (input)="filterMin.set(+($event.target as HTMLInputElement).value || priceMin())">
+            <span>—</span>
+            <input type="number" [min]="priceMin()" [max]="priceMax()" [value]="filterMax()"
+                 (input)="filterMax.set(+($event.target as HTMLInputElement).value || priceMax())">
           </div>
-          <div class="right">
-            <span class="tag">{{ p.tag }}</span>
-            <button class="add" (click)="cartSvc.add(p)">+ Añadir</button>
-          </div>
+          <small class="muted">{{ priceMin() | currency:'EUR' }} – {{ priceMax() | currency:'EUR' }}</small>
         </div>
-      </article>
+
+        <div class="filters-actions">
+          <button class="clear" (click)="clearFilters()">Limpiar</button>
+          <button class="apply" (click)="filtersOpen=false">Aplicar</button>
+        </div>
+      </aside>
+
+      <!-- CATÁLOGO centrado -->
+      <section class="catalog">
+        <div class="grid">
+          <article class="card" *ngFor="let p of filteredProducts()">
+            <div class="media" (click)="openProduct(p)">
+              <img [src]="p.images?.[0]" [alt]="p.name" (error)="onImgErr($event)" />
+              <div class="thumbs">
+                <img *ngFor="let src of p.images" [src]="src" alt="thumb" (error)="onImgErr($event)" />
+              </div>
+            </div>
+
+            <div class="info">
+              <div>
+                <h3>{{ p.name }}</h3>
+                <p class="price">{{ p.price | currency:'EUR' }}</p>
+              </div>
+              <div class="right">
+                <span class="tag">{{ p.tag }}</span>
+                <button class="add" (click)="cartSvc.add(p)">+ Añadir</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -76,6 +142,9 @@
 <div class="modal-backdrop" *ngIf="selected" (click)="selected=null"></div>
 <div class="modal" *ngIf="selected">
   <div class="modal-body" (click)="$event.stopPropagation()">
+    <!-- ✕ Cerrar modal -->
+    <button class="close-btn" (click)="closeProduct()" aria-label="Cerrar">✕</button>
+
     <div class="viewer">
       <button class="nav prev" (click)="prev()">‹</button>
       <img [src]="selected!.images[imgIndex]" [alt]="selected!.name" />
