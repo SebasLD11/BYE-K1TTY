@@ -6,7 +6,6 @@
     "ng": "ng",
     "start": "ng serve --proxy-config src/proxy.conf.json",
     "build": "ng build --configuration production",
-    "postbuild": "echo '\n== Dist ==' && ls -la dist/FRONTEND && echo '\n== Index Head ==' && sed -n '1,30p' dist/FRONTEND/index.html",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
