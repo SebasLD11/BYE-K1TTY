@@ -18,7 +18,8 @@
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/assets","src/favicon.ico"],
             "styles": ["src/styles.scss"],
-            "inlineStyleLanguage": "scss"
+            "inlineStyleLanguage": "scss",
+            "polyfills": ["zone.js"]
           },
           "configurations": {
             "production": {

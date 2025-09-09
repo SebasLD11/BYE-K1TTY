@@ -1,3 +1,5 @@
+// src/main.ts
+import 'zone.js'; // ⬅️ necesario en CSR si usas Zone
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
