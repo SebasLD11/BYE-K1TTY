@@ -1,4 +1,4 @@
-<!-- TOP NAV (renombrado) -->
+<!-- TOP NAV -->
 <header class="topnav">
   <div class="container nav-bar">
     <div class="brand">
@@ -9,8 +9,12 @@
       <button [class.active]="tab()==='home'" (click)="tab.set('home')">Home</button>
       <button [class.active]="tab()==='shop'" (click)="tab.set('shop')">Shop</button>
       <button [class.active]="tab()==='about'" (click)="tab.set('about')">About</button>
-       <!-- Tema con icono y estado accesible -->
-      <button class="theme" (click)="toggleTheme()" [attr.aria-pressed]="dark" [title]="dark ? 'Cambiar a claro' : 'Cambiar a oscuro'">
+      <!-- Tema con icono y estado accesible -->
+      <button
+        class="theme"
+        (click)="toggleTheme()"
+        [attr.aria-pressed]="dark"
+        [title]="dark ? 'Cambiar a claro' : 'Cambiar a oscuro'">
         {{ dark ? '☀️' : '🌙' }}
       </button>
       <button class="cart" (click)="cartOpen=true">
@@ -58,16 +62,17 @@
       <aside class="filters" [class.open]="filtersOpen">
         <header class="filters-head">
           <h3>Filtros</h3>
-          <button class="filters-close" (click)="filtersOpen=false">✕</button>
+          <button class="filters-close" (click)="filtersOpen=false" aria-label="Cerrar filtros">✕</button>
         </header>
 
         <div class="filters-group">
-          <label>Buscar</label>
+          <label for="searchBox">Buscar</label>
           <input
+            id="searchBox"
             type="search"
             placeholder="Nombre del producto…"
             [value]="search()"
-            (input)="search.set(($event.target as HTMLInputElement).value)" />
+            (input)="search.set($any($event.target).value)" />
         </div>
 
         <div class="filters-group">
@@ -86,13 +91,21 @@
         <div class="filters-group">
           <label>Precio</label>
           <div class="price-row">
-            <input type="number" [min]="priceMin()" [max]="priceMax()" [value]="filterMin()"
-                 (input)="filterMin.set(+($event.target as HTMLInputElement).value || priceMin())">
+            <input
+              type="number"
+              [min]="priceMin()" [max]="priceMax()"
+              [value]="filterMin()"
+              (input)="filterMin.set(+($any($event.target).value) || priceMin())">
             <span>—</span>
-            <input type="number" [min]="priceMin()" [max]="priceMax()" [value]="filterMax()"
-                 (input)="filterMax.set(+($event.target as HTMLInputElement).value || priceMax())">
+            <input
+              type="number"
+              [min]="priceMin()" [max]="priceMax()"
+              [value]="filterMax()"
+              (input)="filterMax.set(+($any($event.target).value) || priceMax())">
           </div>
-          <small class="muted">{{ priceMin() | currency:'EUR' }} – {{ priceMax() | currency:'EUR' }}</small>
+          <small class="muted">
+            {{ priceMin() | currency:'EUR' }} – {{ priceMax() | currency:'EUR' }}
+          </small>
         </div>
 
         <div class="filters-actions">
@@ -106,9 +119,16 @@
         <div class="grid">
           <article class="card" *ngFor="let p of filteredProducts()">
             <div class="media" (click)="openProduct(p)">
-              <img [src]="p.images?.[0]" [alt]="p.name" (error)="onImgErr($event)" />
+              <img
+                [src]="p.images?.length ? p.images[0] : FALLBACK_IMG"
+                [alt]="p.name"
+                (error)="onImgErr($event)" />
               <div class="thumbs">
-                <img *ngFor="let src of p.images" [src]="src" alt="thumb" (error)="onImgErr($event)" />
+                <img
+                  *ngFor="let src of p.images"
+                  [src]="src"
+                  alt="thumb"
+                  (error)="onImgErr($event)" />
               </div>
             </div>
 
@@ -131,9 +151,11 @@
   <!-- ABOUT -->
   <section *ngIf="tab()==='about'" class="about">
     <h2>Sobre Bye K1tty</h2>
-    <p>Diseñador de moda urbana y artista gráfico, especializado en la creación de prendas con mensaje provocador y estética underground. Mi trabajo fusiona el arte, la critica social,
-      y la cultura callejera para dar vida a diseños únicos que invitan a la reflexión y la autoexpresión. Colaboro con la comunidad VALODI en el desarrollo de colecciones exclusivas, 
-      aportando visión creativa y su compromiso por mantener viva la autenticidad de la moda urbana.
+    <p>
+      Diseñador de moda urbana y artista gráfico, especializado en la creación de prendas con mensaje provocador y estética underground.
+      Mi trabajo fusiona el arte, la crítica social y la cultura callejera para dar vida a diseños únicos que invitan a la reflexión
+      y la autoexpresión. Colaboro con la comunidad VALODI en el desarrollo de colecciones exclusivas, aportando visión creativa
+      y compromiso por mantener viva la autenticidad de la moda urbana.
     </p>
   </section>
 </main>
@@ -147,22 +169,26 @@
 
     <div class="viewer">
       <button class="nav prev" (click)="prev()">‹</button>
-      <img [src]="selected!.images[imgIndex]" [alt]="selected!.name" />
+      <img
+        [src]="selected?.images?.length ? selected?.images[imgIndex] : FALLBACK_IMG"
+        [alt]="selected?.name || 'Producto'"
+        (error)="onImgErr($event)" />
       <button class="nav next" (click)="next()">›</button>
     </div>
 
     <div class="thumbs-lg">
-      <button *ngFor="let src of selected!.images; let i = index"
-          [class.active]="i===imgIndex"
-          (click)="imgIndex=i">
-        <img [src]="src" [alt]="'thumb-'+i" />
+      <button
+        *ngFor="let src of (selected?.images || []); let i = index"
+        [class.active]="i===imgIndex"
+        (click)="imgIndex=i">
+        <img [src]="src" [alt]="'thumb-'+i" (error)="onImgErr($event)" />
       </button>
     </div>
 
     <div class="meta">
-      <h3>{{ selected!.name }}</h3>
+      <h3>{{ selected?.name }}</h3>
       <div class="row">
-        <span class="price">{{ selected!.price | currency:'EUR' }}</span>
+        <span class="price">{{ (selected?.price || 0) | currency:'EUR' }}</span>
         <button class="cta" (click)="addFromModal()">Añadir al carrito</button>
       </div>
     </div>
@@ -173,12 +199,12 @@
 <div class="drawer" [class.open]="cartOpen">
   <header>
     <h3>Tu carrito</h3>
-    <button (click)="cartOpen=false">✕</button>
+    <button (click)="cartOpen=false" aria-label="Cerrar carrito">✕</button>
   </header>
 
   <div class="content">
     <div class="item" *ngFor="let it of (cartSvc.items$|async)">
-      <img [src]="it.img" alt="thumb" />
+      <img [src]="it.img || FALLBACK_IMG" alt="thumb" (error)="onImgErr($event)" />
       <div class="details">
         <p class="name">{{ it.name }}</p>
         <p class="muted">{{ it.price | currency:'EUR' }}</p>
