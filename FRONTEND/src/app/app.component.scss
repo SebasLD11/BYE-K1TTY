@@ -9,6 +9,7 @@
   /* capas */
   --z-nav: 90;
   --z-overlay: 140;  /* backdrop filtros */
+  --z-filters: 150;  /* <-- NUEVO: sheet filtros móvil */
   --z-drawer: 160;   /* carrito */
   --z-modal: 170;    /* modal producto / filtros en móvil */
 }
@@ -214,10 +215,7 @@
 
 /* Backdrop de filtros: Angular lo añade/quita con *ngIf */
 .filters-backdrop{
-  display:block;
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.45);
-  z-index: var(--z-overlay);
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index: var(--z-overlay);
 }
 
 
@@ -363,25 +361,73 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
 @media (max-width: 768px){
   .shop .filters-toggle{ display:inline-flex; }
-  .filters-backdrop{ display:block; }
-
   .shop-layout{ display:block; }
 
-  /* Panel filtros por ENCIMA del nav */
+  /* Backdrop: Angular lo muestra/oculta con *ngIf */
+  .filters-backdrop{
+    display:block; position:fixed; inset:0;
+    background: rgba(0,0,0,.45);
+    z-index: var(--z-overlay);
+  }
+
+  /* Sheet lateral izquierdo por ENCIMA del nav y del contenido */
   .filters{
     position: fixed;
-    top: 0; left: 0; bottom: 0; width: 84vw; max-width: 380px;
-    border-radius: 0 16px 16px 0;
-    z-index: var(--z-modal); /* más alto que el nav */
-    transform: translateX(-100%); transition: transform .25s ease;
-    overflow-y: auto;
-    padding: calc(var(--nav-h) + 12px) 16px 16px; /* deja hueco bajo el nav */
+    inset: 0 auto 0 0;                 /* top:0; left:0; bottom:0 */
+    width: min(92vw, 380px);
+    height: 100dvh;                    /* barras del navegador móviles */
+    max-height: 100dvh;
+    box-sizing: border-box;
+
+    /* Fondo más opaco para que no se “meta” el catálogo por debajo */
+    background: rgba(255,255,255, .98);
+    color: inherit;
+
+    border-radius: 0 var(--radius) var(--radius) 0;
     box-shadow: 0 20px 50px rgba(0,0,0,.35);
+
+    z-index: var(--z-filters);
+    isolation: isolate;                /* su propio stacking context */
+    contain: paint;                    /* evita fugas de pintura */
+
+    /* Off-canvas + animación en GPU */
+    transform: translate3d(-100%, 0, 0);
+    will-change: transform;
+    transition: transform .25s ease;
+
+    /* Scroll interno del panel, no del fondo */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+
+    /* Respeto a notch/barras */
+    padding:
+      calc(max(12px, env(safe-area-inset-top)) + 4px)
+      16px
+      calc(max(12px, env(safe-area-inset-bottom)))
+      16px;
   }
-  .filters.open{ transform: translateX(0); }
-  .filters-close{ display:inline-grid; place-items:center; }
-  /* tu panel de filtros ya usa transform; mantenemos eso */
-  .filters.open ~ .filters-backdrop{ display:block; }
+  :host.dark .filters{ background: rgba(24,24,27,.98); }
+
+  .filters.open{ transform: translate3d(0, 0, 0); }
+
+  /* Encabezado sticky con separador */
+  .filters-head{
+    position: sticky; top: 0;
+    background: inherit;         /* mismo color que el panel */
+    margin: -4px -16px 8px -16px;
+    padding: 8px 16px 10px 16px;
+    border-bottom: 1px solid rgba(0,0,0,.06);
+    z-index: 1;                  /* por encima del contenido del panel */
+  }
+  :host.dark .filters-head{ border-color: rgba(255,255,255,.08); }
+
+  .filters-close{
+    display: inline-grid; place-items: center;
+    width: 36px; height: 36px; border: none; border-radius: 999px;
+    background: rgba(0,0,0,.06); color: inherit; cursor: pointer;
+  }
+  :host.dark .filters-close{ background: rgba(255,255,255,.08); }
 
   .catalog .grid{
     grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
