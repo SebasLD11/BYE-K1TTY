@@ -285,8 +285,12 @@
   display:grid; place-items:center;
   /* Usamos un gutter variable y respetamos las safe-areas del dispositivo */
   --gutter: clamp(12px, 4vw, 16px);
-  padding: env(safe-area-inset-top) var(--gutter) env(safe-area-inset-bottom);  z-index: var(--z-modal);
-  justify-items:center; align-items:center;    /* 💡 explicitamos centrado (fallback móviles) */
+  padding: env(safe-area-inset-top)
+    calc(env(safe-area-inset-right) + var(--gutter))
+    env(safe-area-inset-bottom)
+    calc(env(safe-area-inset-left) + var(--gutter));
+  justify-items:center; 
+  align-items:center;    /* 💡 explicitamos centrado (fallback móviles) */
 }
 .modal-body{
   background:var(--bg,#fff); color:inherit;
@@ -459,9 +463,10 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   :host.dark .filters-close{ background: rgba(255,255,255,.08); }
 
   .modal-body{
-    width: 96vw;
+    /* Mantenemos el mismo modelo de cálculo que arriba */
+    width: min(960px, calc(100dvw - (var(--gutter) * 2)));
     max-height: calc(100dvh - 8px);
-    border-radius:12px;
+    border-radius: 12px;
   }
   /* El visor centra la imagen sin forzar alturas absolutas */
   .viewer{ 
