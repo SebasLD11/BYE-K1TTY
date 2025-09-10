@@ -429,7 +429,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     margin: -4px -16px 8px -16px;
     padding: 8px 16px 10px 16px;
     border-bottom: 1px solid rgba(0,0,0,.06);
-    z-index: 1;
   }
   :host.dark .filters-head{ border-color: rgba(255,255,255,.08); }
   :host.dark .filters-close{ background: rgba(255,255,255,.08); }
