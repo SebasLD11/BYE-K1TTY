@@ -437,7 +437,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .catalog .grid{
     grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
   }
-  .modal { height: 200px; width: auto;}
 
   .brand-text{ font-size: 13px; max-width: 28vw; }
 }
