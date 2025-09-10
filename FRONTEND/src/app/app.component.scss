@@ -232,6 +232,7 @@
   max-width: 1100px;
   margin: 0 auto;
   position: relative; z-index: 0;
+  border-radius: 8px;
 }
 
 /* Tarjetas */
@@ -247,12 +248,10 @@
 .media{
   position:relative; aspect-ratio:4/5; overflow:hidden; cursor:pointer;
   background: #0b0b0b;
+  border-radius: inherit;
 }
-.card, .media {
-  position: relative;
-  /* NO usar transform aquí salvo necesidad real; crea stacking context nuevo */
-}
-.media img{ width:100%; height:100%; object-fit:cover; display:block;position: relative; }
+
+.media img{ width:100%; height:100%; object-fit:cover; display:block; }
 .media .thumbs{
   position:absolute; left:8px; right:8px; bottom:8px; display:flex; gap:6px; overflow-x:auto;
 }
@@ -284,7 +283,13 @@
 .modal{ position:fixed; inset:0; display:grid; place-items:center; padding:16px; z-index: var(--z-modal); }
 .modal-body{
   position:relative;
-  background:var(--bg,#fff); color:inherit; border-radius:16px; overflow:hidden; max-width:960px; width:100%;
+  background:var(--bg,#fff); 
+  color:inherit; 
+  border-radius:16px; 
+  overflow:hidden; 
+  max-width:960px; 
+  width:100%;
+  max-height: 100dvh;                 /* 👈 clave */
 }
 :host.dark .modal-body{ --bg:#0b0b0b; }
 .close-btn{
@@ -294,8 +299,19 @@
 }
 :host.dark .close-btn{ background:rgba(255,255,255,.1); }
 
-.viewer{ position:relative; aspect-ratio:4/3; background:#000; }
-.viewer img{ width:100%; height:100%; object-fit:contain; display:block; }
+.viewer{ 
+  position: relative;
+  min-height: 40dvh;            /* sensación de “galería” */
+  height: 100%;                 /* llena la fila 1fr */
+  background: #000;
+  overflow: hidden;
+}
+.viewer img{ 
+  width:100%; 
+  height:100%; 
+  object-fit:contain; 
+  display:block; 
+}
 .nav{
   position:absolute; top:50%; transform:translateY(-50%);
   width:40px; height:40px; border-radius:999px; background:rgba(0,0,0,.6);
@@ -312,7 +328,7 @@
 .thumbs-lg button.active{ outline-color:#facc15; }
 .thumbs-lg img{ width:96px; height:64px; object-fit:cover; display:block; border-radius:10px; }
 
-.meta{ padding:16px; }
+.meta{ padding:16px; overflow: auto; }
 .meta .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .meta .price{ font-weight:800; color:#f59e0b; }
 .meta .cta{
@@ -426,6 +442,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     background: rgba(0,0,0,.06); color: inherit; cursor: pointer;
   }
   :host.dark .filters-close{ background: rgba(255,255,255,.08); }
+
+  .modal-body{
+    width: 96vw;
+    max-height: calc(100dvh - 8px);
+    border-radius: 12px;
+  }
+  .viewer{ min-height: 55dvh; }
+  :host.dark .modal-body{ --bg:#0b0b0b; }
 }
 
 @media (max-width: 390px){
