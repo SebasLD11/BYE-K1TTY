@@ -65,6 +65,9 @@
           Filtros
         </button>
       </div>
+    </div>
+
+    <div class="shop-layout container">
       <!-- backdrop móvil -->
       <div class="filters-backdrop" *ngIf="filtersOpen" (click)="filtersOpen=false"></div>
       <!-- ASIDE: Filtros -->
@@ -122,9 +125,6 @@
           <button class="apply" (click)="filtersOpen=false">Aplicar</button>
         </div>
       </aside>
-    </div>
-
-    <div class="shop-layout container">
       <!-- CATÁLOGO centrado -->
       <section class="catalog">
         <div class="grid">
