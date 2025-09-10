@@ -67,64 +67,7 @@
       </div>
     </div>
 
-    <!-- backdrop móvil -->
-    <div class="filters-backdrop" *ngIf="filtersOpen" (click)="filtersOpen=false"></div>
-
     <div class="shop-layout container">
-      <!-- ASIDE: Filtros -->
-      <aside id="filtersPanel" class="filters" [class.open]="filtersOpen">
-        <header class="filters-head">
-          <h3>Filtros</h3>
-          <button type="button" class="filters-close" (click)="filtersOpen=false" aria-label="Cerrar filtros">✕</button>
-        </header>
-        <div class="filters-group">
-          <label for="searchBox">Buscar</label>
-          <input
-            id="searchBox"
-            type="search"
-            placeholder="Nombre del producto…"
-            [value]="search()"
-            (input)="search.set($any($event.target).value)" />
-        </div>    
-        <div class="filters-group">
-          <label>Etiquetas</label>
-          <div class="chips">
-            <button
-              *ngFor="let t of allTags()"
-              class="chip"
-              [class.active]="tagChecked(t)"
-              (click)="toggleTag(t)">
-              {{ t }}
-            </button>
-          </div>
-        </div>
-
-        <div class="filters-group">
-          <label>Precio</label>
-          <div class="price-row">
-            <input
-              type="number"
-              [min]="priceMin()" [max]="priceMax()"
-              [value]="filterMin()"
-              (input)="filterMin.set(+($any($event.target).value) || priceMin())">
-            <span>—</span>
-            <input
-              type="number"
-              [min]="priceMin()" [max]="priceMax()"
-              [value]="filterMax()"
-              (input)="filterMax.set(+($any($event.target).value) || priceMax())">
-          </div>
-          <small class="muted">
-            {{ priceMin() | currency:'EUR' }} – {{ priceMax() | currency:'EUR' }}
-          </small>
-        </div>
-
-        <div class="filters-actions">
-          <button class="clear" (click)="clearFilters()">Limpiar</button>
-          <button class="apply" (click)="filtersOpen=false">Aplicar</button>
-        </div>
-      </aside>
-
       <!-- CATÁLOGO centrado -->
       <section class="catalog">
         <div class="grid">
@@ -240,3 +183,60 @@
     </div>
   </footer>
 </div>
+<!-- backdrop móvil -->
+<div class="filters-backdrop" *ngIf="filtersOpen" (click)="filtersOpen=false"></div>
+<!-- ASIDE: Filtros -->
+<aside id="filtersPanel" class="filters" [class.open]="filtersOpen">
+  <header class="filters-head">
+    <h3>Filtros</h3>
+    <button type="button" class="filters-close" (click)="filtersOpen=false" aria-label="Cerrar filtros">✕</button>
+  </header>
+
+  <div class="filters-group">
+    <label for="searchBox">Buscar</label>
+    <input
+      id="searchBox"
+      type="search"
+      placeholder="Nombre del producto…"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)" />
+  </div> 
+
+  <div class="filters-group">
+    <label>Etiquetas</label>
+    <div class="chips">
+      <button
+        *ngFor="let t of allTags()"
+        class="chip"
+        [class.active]="tagChecked(t)"
+        (click)="toggleTag(t)">
+        {{ t }}
+      </button>
+    </div>
+  </div>
+
+  <div class="filters-group">
+    <label>Precio</label>
+    <div class="price-row">
+      <input
+        type="number"
+        [min]="priceMin()" [max]="priceMax()"
+        [value]="filterMin()"
+        (input)="filterMin.set(+($any($event.target).value) || priceMin())">
+        <span>—</span>
+      <input
+        type="number"
+        [min]="priceMin()" [max]="priceMax()"
+        [value]="filterMax()"
+        (input)="filterMax.set(+($any($event.target).value) || priceMax())">
+    </div>
+    <small class="muted">
+      {{ priceMin() | currency:'EUR' }} – {{ priceMax() | currency:'EUR' }}
+    </small>
+  </div>
+
+  <div class="filters-actions">
+    <button class="clear" (click)="clearFilters()">Limpiar</button>
+    <button class="apply" (click)="filtersOpen=false">Aplicar</button>
+  </div>
+</aside>
