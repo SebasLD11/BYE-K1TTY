@@ -283,13 +283,15 @@
 .modal{
   position:fixed; inset:0;
   display:grid; place-items:center;
-  padding:16px;
-  z-index: var(--z-modal);
+  /* Usamos un gutter variable y respetamos las safe-areas del dispositivo */
+  --gutter: clamp(12px, 4vw, 16px);
+  padding: env(safe-area-inset-top) var(--gutter) env(safe-area-inset-bottom);  z-index: var(--z-modal);
   justify-items:center; align-items:center;    /* 💡 explicitamos centrado (fallback móviles) */
 }
 .modal-body{
   background:var(--bg,#fff); color:inherit;
-  width: min(960px, 96vw);
+  /* 👇 El ancho real del viewport dinámico MENOS el padding lateral del contenedor */
+  width: min(960px, calc(100dvw - (var(--gutter) * 2)));
   max-height: 100dvh;         /* ocupa toda la altura disponible */
   border-radius:16px;
   overflow:hidden;
@@ -299,6 +301,7 @@
   grid-template-rows: 1fr auto auto;  /* visor | thumbs | meta */
   position: relative;
   margin-inline: auto;     /* 💡 asegura centrado horizontal en todos los motores */
+  box-sizing: border-box;  /* si en el futuro añades padding aquí, no descuadra */
 }
 :host.dark .modal-body{ --bg:#0b0b0b; }
 .close-btn{
