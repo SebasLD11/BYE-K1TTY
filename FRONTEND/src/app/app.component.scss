@@ -435,7 +435,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   :host.dark .filters-close{ background: rgba(255,255,255,.08); }
 
   .catalog .grid{
-    grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(400px,1fr));
   }
 
   .brand-text{ font-size: 13px; max-width: 28vw; }
