@@ -5,19 +5,29 @@
       <img class="logo-img" src="assets/img/Logo.BK.png" alt="Bye K1tty" />
       <span class="brand-text">BYE K1TTY</span>
     </div>
+
     <div class="actions">
-      <button [class.active]="tab()==='home'" (click)="tab.set('home')">Home</button>
-      <button [class.active]="tab()==='shop'" (click)="tab.set('shop')">Shop</button>
-      <button [class.active]="tab()==='about'" (click)="tab.set('about')">About</button>
-      <!-- Tema con icono y estado accesible -->
+      <button type="button" [class.active]="tab()==='home'" (click)="tab.set('home')">Home</button>
+      <button type="button" [class.active]="tab()==='shop'" (click)="tab.set('shop')">Shop</button>
+      <button type="button" [class.active]="tab()==='about'" (click)="tab.set('about')">About</button>
+
       <button
+        type="button"
         class="theme"
         (click)="toggleTheme()"
         [attr.aria-pressed]="dark"
         [title]="dark ? 'Cambiar a claro' : 'Cambiar a oscuro'">
         {{ dark ? '☀️' : '🌙' }}
       </button>
-      <button class="cart" (click)="cartOpen=true">
+
+      <!-- Cart toggle accesible -->
+      <button
+        type="button"
+        class="cart"
+        (click)="cartOpen=true"
+        aria-label="Abrir carrito"
+        aria-controls="drawerCart"
+        [attr.aria-expanded]="cartOpen ? 'true' : 'false'">
         Carrito
         <span class="badge" *ngIf="(cartSvc.items$|async)?.length">
           {{ (cartSvc.items$|async)?.length }}
@@ -50,7 +60,10 @@
         <div class="tags">
           <span *ngFor="let t of allTags()">#{{ t }}</span>
         </div>
-        <button class="filters-toggle" (click)="filtersOpen = true">Filtros</button>
+        <!-- + aria-controls / expanded -->
+        <button type="button" class="filters-toggle" (click)="filtersOpen = true" aria-controls="filtersPanel" [attr.aria-expanded]="filtersOpen ? 'true' : 'false'">
+          Filtros
+        </button>
       </div>
     </div>
 
@@ -59,12 +72,11 @@
 
     <div class="shop-layout container">
       <!-- ASIDE: Filtros -->
-      <aside class="filters" [class.open]="filtersOpen">
+      <aside id="filtersPanel" class="filters" [class.open]="filtersOpen">
         <header class="filters-head">
           <h3>Filtros</h3>
-          <button class="filters-close" (click)="filtersOpen=false" aria-label="Cerrar filtros">✕</button>
+          <button type="button" class="filters-close" (click)="filtersOpen=false" aria-label="Cerrar filtros">✕</button>
         </header>
-
         <div class="filters-group">
           <label for="searchBox">Buscar</label>
           <input
@@ -73,8 +85,7 @@
             placeholder="Nombre del producto…"
             [value]="search()"
             (input)="search.set($any($event.target).value)" />
-        </div>
-
+        </div>    
         <div class="filters-group">
           <label>Etiquetas</label>
           <div class="chips">
@@ -131,7 +142,6 @@
                   (error)="onImgErr($event)" />
               </div>
             </div>
-
             <div class="info">
               <div>
                 <h3>{{ p.name }}</h3>
@@ -165,7 +175,7 @@
 <div class="modal" *ngIf="selected">
   <div class="modal-body" (click)="$event.stopPropagation()">
     <!-- ✕ Cerrar modal -->
-    <button class="close-btn" (click)="closeProduct()" aria-label="Cerrar">✕</button>
+    <button id="modalClose" class="close-btn" (click)="closeProduct()" aria-label="Cerrar">✕</button>
 
     <div class="viewer">
       <button class="nav prev" (click)="prev()">‹</button>
@@ -196,10 +206,10 @@
 </div>
 
 <!-- DRAWER CARRITO -->
-<div class="drawer" [class.open]="cartOpen">
+<div id="drawerCart" class="drawer" [class.open]="cartOpen" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
   <header>
-    <h3>Tu carrito</h3>
-    <button (click)="cartOpen=false" aria-label="Cerrar carrito">✕</button>
+    <h3 id="cartTitle">Tu carrito</h3>
+    <button id="cartClose" type="button" (click)="cartOpen=false" aria-label="Cerrar carrito">✕</button>
   </header>
 
   <div class="content">

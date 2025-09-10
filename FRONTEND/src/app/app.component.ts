@@ -1,4 +1,4 @@
-import { Component, HostBinding, HostListener, inject, signal, computed  } from '@angular/core';
+import { Component, HostBinding, HostListener, inject, signal, computed, effect  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
@@ -17,6 +17,8 @@ export class AppComponent {
     private productSvc = inject(ProductService);
     cartSvc = inject(CartService);
     private checkout = inject(CheckoutService);
+    // Guarda el último foco para devolverlo al cerrar (opcional)
+    private _lastFocus: HTMLElement | null = null;
 
     @HostBinding('class.dark') 
     dark = typeof window !== 'undefined' && localStorage.getItem('bk-theme') === 'dark';
@@ -76,6 +78,32 @@ export class AppComponent {
             this.priceMin.set(min); this.priceMax.set(max);
             this.filterMin.set(min); this.filterMax.set(max);
         });
+        // ✅ Mejora accesible (opcional): bloquear scroll y hacer inerte el fondo
+        effect(() => {
+            const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected;
+
+            // Bloquea scroll del body
+            document.body.classList.toggle('no-scroll', overlayOpen);
+
+            // Marca fondo como inert cuando hay MODAL (producto) o CARRITO
+            const main = document.querySelector('main') as HTMLElement | null;
+            const topnav = document.querySelector('.topnav') as HTMLElement | null;
+            if (main) (main as any).inert = !!(this.selected || this.cartOpen);
+            if (topnav) (topnav as any).inert = !!(this.selected || this.cartOpen);
+
+            // Gestión de foco: al abrir, enfoca botón cerrar del overlay
+            queueMicrotask(() => {
+                if (this.cartOpen) {
+                    this._focusById('cartClose');
+                } else if (this.selected) {
+                    this._focusById('modalClose');
+                } else if (this._lastFocus) {
+                // al cerrar, devolvemos el foco donde estaba
+                    this._lastFocus.focus();
+                    this._lastFocus = null;
+                }
+            });
+        });
     }
 
     private normalizeAsset(src: string): string {
@@ -110,10 +138,20 @@ export class AppComponent {
     next(){ if(this.selected) this.imgIndex = (this.imgIndex + 1) % this.selected.images.length; }
     prev(){ if(this.selected) this.imgIndex = (this.imgIndex - 1 + this.selected.images.length) % this.selected.images.length; }
 
+    // Guarda el foco actual antes de abrir overlays
+    private _rememberFocus() {
+        this._lastFocus = (document.activeElement as HTMLElement) ?? null;
+    }
+    private _focusById(id: string) {
+        const el = document.getElementById(id) as HTMLElement | null;
+        if (el) el.focus();
+    }
     addFromModal(){
         if(!this.selected) return;
         this.cartSvc.add(this.selected);
-        this.selected = null; this.cartOpen = true;
+        this.selected = null; 
+        this._rememberFocus();
+        this.cartOpen = true;
     }
 
     checkoutNow(){
