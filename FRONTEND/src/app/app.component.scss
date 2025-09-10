@@ -9,9 +9,9 @@
   /* capas */
   --z-nav: 100;
   --z-overlay: 10010;  /* backdrop filtros */
-  --z-filters: 10020; /* sheet filtros móvil */
+  --z-modal: 10020;   /* modal producto */
   --z-drawer: 10030;  /* carrito */
-  --z-modal: 10040;   /* modal producto */
+  --z-filters: 10040; /* sheet filtros móvil */
 }
 
 :host{
