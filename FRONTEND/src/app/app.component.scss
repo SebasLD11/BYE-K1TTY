@@ -4,7 +4,7 @@
 :root{
   --nav-h: 64px;
   --container: clamp(320px, 92vw, 1120px);
-  --radius: 16px;
+  --radius: 20px;
 
   /* capas */
   --z-nav: 100;
@@ -157,6 +157,7 @@
   gap:24px;
   margin-top: 16px;
 }
+.shop { position: relative; }
 /* =========================
    ASIDE filtros
    ========================= */
@@ -224,12 +225,13 @@
 /* =========================
    CATÁLOGO (centrado)
    ========================= */
-.catalog{ width:100%;}
+.catalog{ width:100%; position: relative; }
 .catalog .grid{
   display:grid; gap:24px;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   max-width: 1100px;
   margin: 0 auto;
+  position: relative;          /* sin z-index */
   border-radius: 8px;
 }
 
@@ -277,50 +279,55 @@
 /* =========================
    MODAL producto
    ========================= */
-/* Backdrop ok */
 .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index: var(--z-modal); }
-
-/* ⭐ Flex para centrar en móviles de forma robusta */
 .modal{
-  position: fixed; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  padding: 16px;
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  padding:16px;
   z-index: var(--z-modal);
+  justify-items:center; align-items:center;    /* 💡 explicitamos centrado (fallback móviles) */
 }
-
-/* Cuerpo a 100dvh y layout en filas */
 .modal-body{
-  background: var(--bg,#fff); color: inherit;
+  background:var(--bg,#fff); color:inherit;
   width: min(960px, 96vw);
-  max-height: 100dvh;
-  border-radius: 16px;
-  overflow: hidden;
+  max-height: 100dvh;         /* ocupa toda la altura disponible */
+  border-radius:16px;
+  overflow:hidden;
 
-  display: grid;
-  grid-template-rows: 1fr auto auto; /* viewer crece; thumbs/meta auto */
-  box-sizing: border-box;            /* evita desbordes horizontales */
-  position: relative;                /* para el botón cerrar */
+  /* Layout vertical estable */
+  display:grid;
+  grid-template-rows: 1fr auto auto;  /* visor | thumbs | meta */
+  position: relative;
+  margin-inline: auto;     /* 💡 asegura centrado horizontal en todos los motores */
 }
-
 :host.dark .modal-body{ --bg:#0b0b0b; }
-
 .close-btn{
   position:absolute; top:10px; right:10px; z-index:2;
-  width:36px; height:36px; border:none; border-radius:999px;
-  cursor:pointer; background:rgba(0,0,0,.08); color:inherit;
+  width:36px; height:36px; border:none; border-radius:999px; cursor:pointer;
+  background:rgba(0,0,0,.08); color:inherit;
 }
 :host.dark .close-btn{ background:rgba(255,255,255,.1); }
 
 .viewer{
-  position: relative; background: #000;
-  min-height: 45dvh; height: 100%;
-  overflow: hidden;
+  position:relative;
+  background:#000;
+  min-height: 45dvh;   /* móvil: imagen protagonista */
+  height:100%;         /* llena la fila 1fr */
+  overflow:hidden;
 }
 .viewer img{
-  width: 100%; height: 100%;
-  object-fit: contain; object-position: center;
-  display: block;
+  width:100%; height:100%;
+  object-fit:contain; object-position:center;
+  display:block;
 }
+
+.nav{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:40px; height:40px; border-radius:999px; background:rgba(0,0,0,.6);
+  color:#fff; border:none; cursor:pointer; display:grid; place-items:center;
+}
+.prev{ left:12px; }
+.next{ right:12px; }
 
 .thumbs-lg{
   display:flex; gap:8px; padding:12px;
@@ -329,7 +336,11 @@
 }
 :host.dark .thumbs-lg{ border-color: rgba(255,255,255,.08); }
 
-.meta{ padding: 16px; overflow: auto; }
+.thumbs-lg button{ border:none; padding:0; border-radius:10px; outline:2px solid transparent; }
+.thumbs-lg button.active{ outline-color:#facc15; }
+.thumbs-lg img{ width:96px; height:64px; object-fit:cover; display:block; border-radius:10px; }
+
+.meta{ padding:16px; overflow:auto; }
 .meta .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .meta .price{ font-weight:800; color:#f59e0b; }
 .meta .cta{
@@ -402,7 +413,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     box-shadow: 0 20px 50px rgba(0,0,0,.35);
 
     /* Blindaje de stacking (clave) */
-    z-index: var(--z-filters) !important;
+    z-index: 2147483647 !important;
     isolation: isolate;
     contain: paint;
     backface-visibility: hidden;
@@ -449,10 +460,21 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     max-height: calc(100dvh - 8px);
     border-radius:12px;
   }
-  .viewer{ min-height: 55dvh; }
+  /* El visor centra la imagen sin forzar alturas absolutas */
+  .viewer{ 
+    display: flex; align-items: center; justify-content: center;
+    min-height: 55dvh;   /* ya lo tenías */
+    height: 100%;
+  }
+  .viewer img{
+    max-width: 100%;
+    max-height: 100%;
+    width: auto; height: auto;   /* evita que la imagen invada meta/thumbs */
+    object-fit: contain;
+  }
   :host.dark .modal-body{ --bg:#0b0b0b; }
   .catalog, .catalog .grid, .card, .media, .media img {
-    z-index: auto !important;  /* cancela cualquier z-index accidental */
+    z-index: auto !important;    /* neutraliza z-index accidentales en móvil */
   }
 }
 
