@@ -372,13 +372,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .shop .filters-toggle{ display:inline-flex; }
   .shop-layout{ display:block; }
 
-  /* Backdrop: Angular lo muestra/oculta con *ngIf */
-  .filters-backdrop{
-    display:block; position:fixed; inset:0;
-    background: rgba(0,0,0,.45);
-    z-index: var(--z-overlay);
-  }
-
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
     position: fixed;
@@ -401,6 +394,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     /* Off-canvas en GPU */
     transform: translate3d(-100%,0,0);
     transition: transform .25s ease;
+    will-change: transform;
 
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -433,12 +427,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     background: rgba(0,0,0,.06); color: inherit; cursor: pointer;
   }
   :host.dark .filters-close{ background: rgba(255,255,255,.08); }
-
-  .catalog .grid{
-    grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
-  }
-
-  .brand-text{ font-size: 13px; max-width: 28vw; }
 }
 
 @media (max-width: 390px){
