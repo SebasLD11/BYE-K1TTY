@@ -157,7 +157,6 @@
   gap:24px;
   margin-top: 16px;
 }
-.shop { position: relative; z-index: 0; }
 /* =========================
    ASIDE filtros
    ========================= */
@@ -225,13 +224,12 @@
 /* =========================
    CATÁLOGO (centrado)
    ========================= */
-.catalog{ width:100%; position: relative; z-index: 0; }
+.catalog{ width:100%;}
 .catalog .grid{
   display:grid; gap:24px;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   max-width: 1100px;
   margin: 0 auto;
-  position: relative; z-index: 0;
   border-radius: 8px;
 }
 
@@ -280,16 +278,23 @@
    MODAL producto
    ========================= */
 .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index: var(--z-modal); }
-.modal{ position:fixed; inset:0; display:grid; place-items:center; padding:16px; z-index: var(--z-modal); }
+.modal{
+  position:fixed; inset:0;
+  display:grid; place-items:center;
+  padding:16px;
+  z-index: var(--z-modal);
+}
 .modal-body{
-  position:relative;
-  background:var(--bg,#fff); 
-  color:inherit; 
-  border-radius:16px; 
-  overflow:hidden; 
-  max-width:960px; 
-  width:100%;
-  align-items: center;
+  background:var(--bg,#fff); color:inherit;
+  width: min(960px, 96vw);
+  max-height: 100dvh;         /* ocupa toda la altura disponible */
+  border-radius:16px;
+  overflow:hidden;
+
+  /* Layout vertical estable */
+  display:grid;
+  grid-template-rows: 1fr auto auto;  /* visor | thumbs | meta */
+  position: relative;
 }
 :host.dark .modal-body{ --bg:#0b0b0b; }
 .close-btn{
@@ -299,19 +304,19 @@
 }
 :host.dark .close-btn{ background:rgba(255,255,255,.1); }
 
-.viewer{ 
-  position: relative;
-  min-height: 40dvh;            /* sensación de “galería” */
-  height: 100%;                 /* llena la fila 1fr */
-  background: #000;
-  overflow: hidden;
+.viewer{
+  position:relative;
+  background:#000;
+  min-height: 45dvh;   /* móvil: imagen protagonista */
+  height:100%;         /* llena la fila 1fr */
+  overflow:hidden;
 }
-.viewer img{ 
-  width:100%; 
-  height:100%; 
-  object-fit:contain; 
-  display:block; 
+.viewer img{
+  width:100%; height:100%;
+  object-fit:contain; object-position:center;
+  display:block;
 }
+
 .nav{
   position:absolute; top:50%; transform:translateY(-50%);
   width:40px; height:40px; border-radius:999px; background:rgba(0,0,0,.6);
@@ -321,14 +326,17 @@
 .next{ right:12px; }
 
 .thumbs-lg{
-  display:flex; gap:8px; padding:12px; border-bottom:1px solid rgba(0,0,0,.06); overflow-x:auto;
+  display:flex; gap:8px; padding:12px;
+  border-bottom:1px solid rgba(0,0,0,.06);
+  overflow-x:auto;
 }
 :host.dark .thumbs-lg{ border-color: rgba(255,255,255,.08); }
+
 .thumbs-lg button{ border:none; padding:0; border-radius:10px; outline:2px solid transparent; }
 .thumbs-lg button.active{ outline-color:#facc15; }
 .thumbs-lg img{ width:96px; height:64px; object-fit:cover; display:block; border-radius:10px; }
 
-.meta{ padding:16px; overflow: auto; }
+.meta{ padding:16px; overflow:auto; }
 .meta .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .meta .price{ font-weight:800; color:#f59e0b; }
 .meta .cta{
@@ -446,7 +454,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .modal-body{
     width: 96vw;
     max-height: calc(100dvh - 8px);
-    border-radius: 12px;
+    border-radius:12px;
   }
   .viewer{ min-height: 55dvh; }
   :host.dark .modal-body{ --bg:#0b0b0b; }
