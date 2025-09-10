@@ -54,12 +54,11 @@
 }
 
 .nav-bar{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
   min-height: var(--nav-h);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  flex-wrap: nowrap;
 }
 
 .brand{
@@ -68,34 +67,42 @@
 }
 
 .logo-img{
-  width:36px; height:36px; display:block; object-fit:contain;
-  border-radius:10px;
-  image-rendering: -webkit-optimize-contrast;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--nav-h);
 }
 
 .brand-text{
-  letter-spacing: .06em;
   font-weight: 900;
+  letter-spacing: .06em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: clamp(14px, 2.8vw, 18px);
-  max-width: 40vw; /* no empuja los botones en móvil */
+  max-width: 40vw;               /* no empuja las acciones en móvil */
 }
 
 .actions{
-  display:flex; gap:8px; align-items:center; flex: 0 1 auto; min-width: 0;
+ font-weight: 900;
+  letter-spacing: .06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(14px, 2.8vw, 18px);
+  max-width: 40vw;               /* no empuja las acciones en móvil */
 }
+.actions::-webkit-scrollbar{ display:none; }
 .actions button{
-  padding:6px 10px;
-  border-radius:12px;
-  border:1px solid transparent;
-  background:transparent;
-  color:inherit;
-  font-weight:600;
-  cursor:pointer;
+  flex: 0 0 auto;                /* no se estiran */
+  padding: 6px 10px;
   font-size: clamp(12px, 3.4vw, 16px);
+  border-radius: 12px;
 }
+
+/* Tema oscuro del nav sigue bien */
+:host.dark .topnav{ background: rgba(0,0,0,.55); }
 .actions button.active{ background:#facc15; color:#000; }
 .actions .theme{ background:#e5e7eb; }
 :host.dark .actions .theme{ background:#1f2937; }
@@ -347,16 +354,18 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   /* Panel filtros por ENCIMA del nav */
   .filters{
     position: fixed;
-    top: 0; left: 0; bottom: 0; width: 84vw; max-width: 380px;
-    border-radius: 0 16px 16px 0;
-    z-index: var(--z-modal); /* más alto que el nav */
-    transform: translateX(-100%); transition: transform .25s ease;
+    top: 0; left: 0; bottom: 0;
+    width: 84vw; max-width: 380px;
+    z-index: var(--z-modal);                  /* encima del nav */
+    padding: calc(var(--nav-h) + 12px) 16px 16px;
+    transform: translateX(-100%);
+    transition: transform .25s ease;
     overflow-y: auto;
-    padding: calc(var(--nav-h) + 12px) 16px 16px; /* deja hueco bajo el nav */
+    border-radius: 0 16px 16px 0;
     box-shadow: 0 20px 50px rgba(0,0,0,.35);
   }
   .filters.open{ transform: translateX(0); }
-  .filters-close{ display:inline-grid; place-items:center; }
+  .filters-close{ display:inline-grid; place-items:center;} 
 
   .catalog .grid{
     grid-template-columns: repeat(auto-fill, minmax(200px,1fr));
@@ -364,9 +373,22 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
   .brand-text{ max-width: 28vw; }
 }
-
+/* --- Ajustes de respuesta para móviles estrechos --- */
+@media (max-width: 480px){
+  .brand-text{ max-width: 30vw; } /* mantenemos marca visible */
+  .actions{ max-width: 56vw; gap: 6px; }
+}
+@media (max-width: 410px){
+  .brand-text{ max-width: 26vw; }
+  .actions{ max-width: 60vw; }
+}
 @media (max-width: 390px){
   .filters{ width: 92vw; }
   .logo-img{ width:32px; height:32px; }
   .brand-text{ font-size: 13px; max-width: 26vw; }
 }
+@media (max-width: 370px){
+  .brand-text{ display: none; }  /* en pantallas MUY pequeñas, ocultar texto */
+  .actions{ max-width: 72vw; }
+}
+
