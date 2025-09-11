@@ -23,7 +23,7 @@ export class AppComponent {
     @HostBinding('class.dark') 
     dark = typeof window !== 'undefined' && localStorage.getItem('bk-theme') === 'dark';
 
-    tab = signal<'home'|'shop'|'about'>('home');
+    tab = signal<'home'|'shop'|'about'>('shop');
     products = signal<Product[]>([]);
     selected: Product | null = null;
     imgIndex = 0;
