@@ -153,21 +153,77 @@
   
   <!-- ABOUT -->
   <section *ngIf="tab()==='about'" class="about">
-    <div class="about-grid">
-      <div class="about-text">
-        <h2>Sobre Bye K1tty</h2>
-        <p>
+    <header class="about-header">
+      <h2>Sobre Bye K1tty</h2>
+      <p>
         Diseñador de moda urbana y artista gráfico, especializado en la creación de prendas con mensaje provocador y estética underground.
         Mi trabajo fusiona el arte, la crítica social y la cultura callejera para dar vida a diseños únicos que invitan a la reflexión
         y la autoexpresión. Colaboro con la comunidad VALODI en el desarrollo de colecciones exclusivas, aportando visión creativa
         y compromiso por mantener viva la autenticidad de la moda urbana.
-        </p>
-        <figure class="about-media">
-        <!-- Cambia el nombre del archivo si es distinto -->
-        <img src="assets/img/BK.Vulgar.png" alt="Retrato / trabajo Bye K1tty" loading="lazy" (error)="onImgErr($event)" />
-        </figure>
+      </p>
+    </header>
+
+    <div class="about-grid">
+      <!-- Imagen -->
+      <figure class="about-media">
+        <!-- Ajusta el nombre del archivo si es distinto -->
+        <img src="assets/img/BK.Vulgar.png" alt="Bye K1tty — retrato" (error)="onImgErr($event)" />
+      </figure>
+
+      <!-- Contenido lateral: contacto + FAQ -->
+      <div class="about-content">
+        <!-- Contacto -->
+        <section class="contact">
+          <h3>Contacto</h3>
+          <ul class="contact-list">
+            <li>
+              <!-- Sustituye 34XXXXXXXXX por tu número en formato internacional -->
+              <a class="contact-card" href="https://wa.me/34634183862" target="_blank" rel="noopener">
+                <img class="icon" src="assets/img/notificacion.png" alt="" />
+                <span>Escríbeme por WhatsApp</span>
+              </a>
+            </li>
+            <li>
+              <!-- Sustituye el handle por el tuyo -->
+              <a class="contact-card" href="https://www.instagram.com/byekitttty" target="_blank" rel="noopener">
+                <img class="icon" src="assets/img/inst-icon.png" alt="" />
+                <span>Sígueme en Instagram</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <!-- FAQ -->
+        <section class="faq">
+          <h3>FAQ</h3>
+
+          <details>
+            <summary>¿Qué tallas manejas?</summary>
+            <p>Normalmente S–XL. Cada prenda indica medidas exactas en la ficha. Si dudas entre dos tallas, elige la mayor para un fit oversize.</p>
+          </details>
+
+          <details>
+            <summary>¿Cuánto tarda el envío?</summary>
+            <p>España peninsular: 48–72h laborables. Islas/UE: 4–7 días. Recibirás tracking cuando el pedido salga del taller.</p>
+          </details>
+
+          <details>
+            <summary>¿Aceptas cambios o devoluciones?</summary>
+            <p>Dispones de 14 días desde la recepción. La prenda debe estar sin usar y con etiquetas. Escribe por WhatsApp para gestionar el caso.</p>
+          </details>
+
+          <details>
+            <summary>¿Cómo cuido mis prendas?</summary>
+            <p>Lavar del revés con agua fría, programa suave, sin secadora. No planchar directamente el estampado.</p>
+          </details>
+
+          <details>
+            <summary>¿Qué métodos de pago aceptas?</summary>
+            <p>Se aceptan solo tarjetas. Los pagos se procesan con pasarela cifrada.</p>
+          </details>
+        </section>
       </div>
-    </div> 
+    </div>
   </section>  
 </main>
 
