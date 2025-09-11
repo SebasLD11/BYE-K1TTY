@@ -115,18 +115,39 @@
 }
 
 /* =========================
-   HERO (Home)
+   HERO (Shop)
    ========================= */
 .hero{
-  min-height:70vh; display:grid; place-items:center; text-align:center;
-  padding: 24px 0 16px;
+  /* Altura base más contenida si se usa fuera de shop (por consistencia) */
+  min-height: 40vh;
+  display: grid;
+  place-items: center;     /* centra vertical y horizontal */
+  text-align: center;
+  padding: 10px 0;
 }
-.hero h1{ font-size: clamp(40px, 6vw, 72px); font-weight:900; margin:0; }
-.hero p{ opacity:.85; max-width:720px; margin:16px auto 0; }
-/* Hero embebido en Shop: un poco más corto y con gap hacia el header */
+
+.hero h1{
+  font-size: clamp(20px, 3vw, 50px);
+  font-weight: 500;
+  line-height: 1.15;
+  margin: 0;
+}
+.hero p{
+  opacity: .85;
+  max-width: 720px;
+  margin: 16px auto 0;
+}
+
+/* Hero embebido en Shop: gobierna altura y padding reales */
 .shop > .hero{
-  min-height: clamp(280px, 50vh, 520px); /* menos alto que 70vh para no empujar demasiado */
-  padding: 24px 0 8px;                   /* mantiene aire pero acerca “Tienda” */
+  /* en motores modernos, usar dvh; fallback a vh */
+  min-height: clamp(280px, 50dvh, 520px);
+  padding: 24px 0 8px;
+}
+@supports not (height: 1dvh){
+  .shop > .hero{
+    min-height: clamp(280px, 50vh, 520px);
+  }
 }
 
 /* =========================
