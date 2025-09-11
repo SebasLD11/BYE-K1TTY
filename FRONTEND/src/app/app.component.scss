@@ -182,7 +182,7 @@
 .shop-layout{
   display:grid;
   grid-template-columns: 300px 1fr;
-  gap:24px;
+  gap:20px;
   margin-top: 16px;
 }
 .shop { position: relative; }
@@ -262,6 +262,14 @@
   position: relative;          /* sin z-index */
   border-radius: 8px;
 }
+/* El grid del catálogo ocupa toda su columna y no se centra */
+.shop-layout .catalog .grid{
+  width: 100%;
+  max-width: none;
+  margin: 0;          /* sobrescribe el 0 auto */
+  /* opcional: algo menos de separación general */
+  gap: 20px;
+}
 
 /* Tarjetas */
 .card{
@@ -298,48 +306,49 @@
 }
 
 /* =========================
-   ABOUT
+   ABOUT — texto + imagen (gap 20px)
    ========================= */
 .about{
-  padding: 20px 0 32px;              /* respiración vertical */
-}
-
-.about-grid{
   display: grid;
-  grid-template-columns: 1fr;        /* móvil: una columna */
-  gap: 20px;                         /* 👈 salto entre elementos de 20px */
+  grid-template-columns: 1.15fr .85fr; /* texto | imagen */
   align-items: center;
-}
-
-.about-text{
-  display: grid;
-  gap: 20px;                         /* h2 y p separados 20px */
-  text-align: center;                /* móvil centrado */
+  gap: 20px;
+  max-width: var(--container);
+  margin: 16px auto 24px;
+  padding: 0 16px;
 }
 
 .about h2{
-  font-size: clamp(24px, 3vw, 32px);
-  margin: 0;
+  grid-column: 1 / -1;         /* el título ocupa todo el ancho */
+  margin: 0 0 6px;
+  text-align: center;
 }
 
-.about p{
-  opacity: .85;
-  max-width: 65ch;
-  margin: 0 auto;                    /* centrado en móvil */
-}
-
-.about-media{
+.about > p{
+  grid-column: 1 / 2;
+  margin: 0;                    /* quita huecos extra */
+  text-align: center;           /* como en tu diseño actual */
+  max-width: 58ch;
+  font-size: clamp(18px, 1.25vw, 20px); /* ↑ tamaño del párrafo en desktop */
+  line-height: 1.55;
   justify-self: center;
 }
 
-.about-media img{
-  width: min(100%, 520px);
-  aspect-ratio: 4 / 3;               /* recorte agradable */
-  object-fit: cover;
-  border-radius: var(--radius);
-  display: block;
-  box-shadow: 0 10px 30px rgba(0,0,0,.08);
+.about .about-media{
+  grid-column: 2 / 3;
+  justify-self: center;
 }
+
+.about .about-media img{
+  display: block;
+  width: 100%;
+  max-width: 650px;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 40px rgba(0,0,0,.12);
+}
+
 /* =========================
    MODAL producto
    ========================= */
@@ -463,7 +472,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 1024px){
-  .shop-layout{ grid-template-columns: 260px 1fr; }
+  .shop-layout{ grid-template-columns: 260px 1fr; gap: 16px; }
    /* Opcional: aún más recogido en altura total */
    /* Quita altura forzada y reduce padding vertical */
   .shop > .hero{
@@ -501,7 +510,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     margin: 0;                         /* ya no centramos */
   }
   .about-media{
-    justify-self: end;                 /* alinea imagen al borde derecho del contenedor */
+    justify-self: end; /* alinea imagen al borde derecho del contenedor */
+    grid-column: 1 / -1;
   }
 }
 
@@ -621,7 +631,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     margin: 0 auto;
   }
   .about-media img{
-    width: min(100%, 460px);
+    width: min(100%, 500px);
     aspect-ratio: 4 / 3;
     object-fit: cover;
     border-radius: var(--radius);
