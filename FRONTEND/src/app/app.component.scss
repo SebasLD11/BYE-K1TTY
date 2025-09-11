@@ -428,6 +428,19 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
 @media (max-width: 1024px){
   .shop-layout{ grid-template-columns: 260px 1fr; }
+   /* Opcional: aún más recogido en altura total */
+  .shop > .hero{
+    min-height: clamp(160px, 28vh, 320px);
+    padding: 16px 0 6px;
+  }
+
+  /* Reduce el hueco y sube el tamaño del párrafo */
+  .shop > .hero p{
+    margin-top: 6px;                     /* antes ~16px */
+    font-size: clamp(18px, 1.25vw, 22px); /* más grande en desktop */
+    line-height: 1.45;                   /* lectura suave sin alargar en exceso */
+    max-width: 820px;                    /* texto un pelín más ancho */
+  }
 }
 
 @media (max-width: 768px){
