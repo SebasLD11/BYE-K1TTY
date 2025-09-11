@@ -28,6 +28,7 @@ export class AppComponent {
     selected: Product | null = null;
     imgIndex = 0;
     cartOpen = false;
+    selectedSize: string | null = null;
 
     // ✅ fallback centralizado
     readonly FALLBACK_IMG = 'assets/img/placeholder.png';
@@ -133,8 +134,19 @@ export class AppComponent {
         localStorage.setItem('bk-theme', this.dark? 'dark':'light'); 
     }
 
-    openProduct(p: Product){ this.selected = p; this.imgIndex = 0; }
-    closeProduct(){ this.selected = null; }                  // 👈 NUEVO
+    openProduct(p: Product){ 
+        // Guarda el foco ANTES de abrir el modal
+        this._rememberFocus();
+
+        this.selected = p;
+        this.imgIndex = 0;
+        // preselecciona primera talla si hay
+        this.selectedSize = Array.isArray(p?.sizes) && p.sizes.length ? p.sizes[0] : null;
+    }
+    closeProduct(){ 
+        this.selected = null;
+        this.selectedSize = null; 
+    }                  // 👈 NUEVO
     next(){ if(this.selected) this.imgIndex = (this.imgIndex + 1) % this.selected.images.length; }
     prev(){ if(this.selected) this.imgIndex = (this.imgIndex - 1 + this.selected.images.length) % this.selected.images.length; }
 
@@ -148,14 +160,19 @@ export class AppComponent {
     }
     addFromModal(){
         if(!this.selected) return;
-        this.cartSvc.add(this.selected);
-        this.selected = null; 
+
+        const size = (this.selected?.sizes?.length ? this.selectedSize : null) || null;
+
+        // Guarda el foco ANTES de abrir el carrito
         this._rememberFocus();
-        this.cartOpen = true;
+
+        this.cartSvc.add(this.selected, size);
+        this.closeProduct();      // <- basta con esto (evita el set null duplicado)
+        this.cartOpen = true;     // abre el carrito para feedback inmediato
     }
 
     checkoutNow(){
-        const items = this.cartSvc.snapshot().map(i=>({ id: i.id, qty: i.qty }));
+        const items = this.cartSvc.toCheckoutItems(); // [{id, qty, size}]
         if(!items.length) return;
         this.checkout.createSession(items).subscribe(({url}) => window.location.href = url);
     }

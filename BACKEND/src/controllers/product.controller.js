@@ -8,7 +8,8 @@ const serialize = p => ({
   name: p.name,
   price: p.price,
   tag: p.tag,
-  images: (Array.isArray(p.images)? p.images:[]).map(abs)
+  images: (Array.isArray(p.images)? p.images:[]).map(abs),
+  sizes: (Array.isArray(p.sizes) ? p.sizes : []).map(String) // ✅ tallas = texto
 });
 
 exports.list = async (_req, res, next) => {

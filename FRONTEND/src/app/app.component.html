@@ -121,7 +121,7 @@
       <!-- CATÁLOGO centrado -->
       <section class="catalog">
         <div class="grid">
-          <article class="card" *ngFor="let p of filteredProducts()">
+          <article class="card" *ngFor="let p of filteredProducts(); trackBy: trackById">
             <div class="media" (click)="openProduct(p)">
               <img
                 [src]="p.images?.length ? p.images[0] : FALLBACK_IMG"
@@ -142,7 +142,10 @@
               </div>
               <div class="right">
                 <span class="tag">{{ p.tag }}</span>
-                <button class="add" (click)="cartSvc.add(p)">+ Añadir</button>
+                <button class="add"
+                  (click)="p.sizes?.length > 1 ? openProduct(p) : cartSvc.add(p, null)">
+                  + Añadir
+                </button>
               </div>
             </div>
           </article>
@@ -281,10 +284,25 @@
 
     <div class="meta">
       <h3>{{ selected?.name }}</h3>
-      <div class="row">
-        <span class="price">{{ (selected?.price || 0) | currency:'EUR' }}</span>
-        <button class="cta" (click)="addFromModal()">Añadir al carrito</button>
+      <!-- Selector de tallas -->
+      <div class="sizes" *ngIf="selected?.sizes?.length">
+        <span class="lbl">Talla:</span>
+        <div class="sizes-row">
+          <button type="button"
+            *ngFor="let s of selected.sizes"
+            [class.active]="selectedSize === s"
+            (click)="selectedSize = s"
+            [attr.aria-pressed]="selectedSize === s ? 'true' : 'false'">
+            {{ s }}
+          </button>
+        </div>
       </div>
+      <!-- CTA -->
+      <button class="cta"
+        [disabled]="selected?.sizes?.length && !selectedSize"
+        (click)="addFromModal()">
+        Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span>
+      </button>
     </div>
   </div>
 </div>
@@ -300,13 +318,16 @@
     <div class="item" *ngFor="let it of (cartSvc.items$|async)">
       <img [src]="it.img || FALLBACK_IMG" alt="thumb" (error)="onImgErr($event)" />
       <div class="details">
-        <p class="name">{{ it.name }}</p>
+        <p class="name">
+          {{ it.name }}
+          <span *ngIf="it.size" class="muted">· Talla {{ it.size }}</span>
+        </p>
         <p class="muted">{{ it.price | currency:'EUR' }}</p>
         <div class="qty">
-          <button (click)="cartSvc.dec(it.id)">-</button>
+          <button (click)="cartSvc.dec(it.key)">-</button>
           <span>{{ it.qty }}</span>
-          <button (click)="cartSvc.inc(it.id)">+</button>
-          <button class="muted" (click)="cartSvc.remove(it.id)">Eliminar</button>
+          <button (click)="cartSvc.inc(it.key)">+</button>
+          <button class="muted" (click)="cartSvc.remove(it.key)">Eliminar</button>
         </div>
       </div>
     </div>

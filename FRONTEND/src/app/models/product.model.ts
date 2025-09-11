@@ -4,4 +4,5 @@ name: string;
 price: number;
 tag: 'new'|'best'|'sale'|'drop';
 images: string[]; // hasta 5
+sizes: string[];
 }

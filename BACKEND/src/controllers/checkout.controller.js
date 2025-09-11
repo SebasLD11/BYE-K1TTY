@@ -15,10 +15,18 @@ exports.createCheckout = async (req, res, next) => {
     const line_items = items.map(i => {
       const p = dbProducts.find(x => String(x._id) === String(i.id));
       if (!p) throw Object.assign(new Error('product_not_found'), { status: 400 });
+      // valida talla si el producto tiene tallas
+      if (Array.isArray(p.sizes) && p.sizes.length) {
+        if (!i.size || !p.sizes.includes(String(i.size))) {
+          throw Object.assign(new Error('invalid_size'), { status: 400 });
+        }
+      }
+
+      const nameWithSize = p.sizes?.length ? `${p.name} — Talla ${i.size}` : p.name;
       return {
         price_data: {
           currency: 'eur',
-          product_data: { name: p.name, images: p.images?.length ? [p.images[0]] : [] },
+          product_data: { name: nameWithSize, images: p.images?.length ? [p.images[0]] : [] },
           unit_amount: Math.round(p.price * 100),
         },
         quantity: Math.max(1, Number(i.qty) || 1),
@@ -27,8 +35,9 @@ exports.createCheckout = async (req, res, next) => {
 
     const order = await Order.create({
       items: dbProducts.map(p => {
-        const q = items.find(i => String(i.id) === String(p._id))?.qty || 1;
-        return { productId: p._id, name: p.name, price: p.price, qty: q };
+        const reqItem = items.find(i => String(i.id) === String(p._id));
+        const q = reqItem?.qty || 1;
+        return { productId: p._id, name: p.name, price: p.price, qty: q, size: reqItem?.size || null };
       }),
       total: dbProducts.reduce((s, p) => s + p.price * (items.find(i => String(i.id) === String(p._id))?.qty || 1), 0),
       status: 'pending',
