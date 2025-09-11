@@ -115,38 +115,45 @@
 }
 
 /* =========================
-   HERO (Shop)
+   HERO (base)
    ========================= */
 .hero{
-  /* Altura base más contenida si se usa fuera de shop (por consistencia) */
-  min-height: 40vh;
+  /* base genérica si se usa fuera de shop */
+  min-height: 32vh;
   display: grid;
-  place-items: center;     /* centra vertical y horizontal */
+  place-items: center;
   text-align: center;
   padding: 10px 0;
 }
 
 .hero h1{
-  font-size: clamp(20px, 3vw, 50px);
-  font-weight: 500;
+  font-size: clamp(20px, 3.2vw, 42px);
+  font-weight: 600;
   line-height: 1.15;
   margin: 0;
 }
 .hero p{
   opacity: .85;
   max-width: 720px;
-  margin: 16px auto 0;
+  margin: 10px auto 0;       /* menos separación bajo el título */
+  font-size: clamp(13px, 2.4vw, 16px);
 }
 
-/* Hero embebido en Shop: gobierna altura y padding reales */
+/* =========================
+   HERO embebido en SHOP (manda)
+   ========================= */
 .shop > .hero{
-  /* en motores modernos, usar dvh; fallback a vh */
-  min-height: clamp(280px, 50dvh, 520px);
-  padding: 24px 0 8px;
+  /* Más compacto: 160–360px o ~28dvh según viewport */
+  min-height: clamp(160px, 28dvh, 360px);
+  /* Contenido más arriba y menos aire inferior */
+  place-items: start center;
+  padding: 14px 0 4px;
 }
+
 @supports not (height: 1dvh){
   .shop > .hero{
-    min-height: clamp(280px, 50vh, 520px);
+    /* Fallback para motores sin dvh */
+    min-height: clamp(160px, 28vh, 360px);
   }
 }
 
@@ -426,6 +433,19 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 @media (max-width: 768px){
   .shop .filters-toggle{ display:inline-flex; }
   .shop-layout{ display:block; }
+  .shop > .hero{
+    min-height: clamp(120px, 22dvh, 260px);
+    padding: 10px 0 2px;
+  }
+  .shop > .hero h1{
+    font-size: clamp(18px, 5vw, 32px);
+    font-weight: 600;
+  }
+  .shop > .hero p{
+    margin-top: 8px;
+    font-size: clamp(12px, 3.2vw, 15px);
+    max-width: 640px;
+  }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
