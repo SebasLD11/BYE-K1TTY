@@ -134,7 +134,7 @@
 }
 .hero p{
   opacity: .85;
-  max-width: 720px;
+  max-width: 200px;
   margin: 10px auto 0;       /* menos separación bajo el título */
   font-size: clamp(13px, 2.4vw, 16px);
 }
@@ -144,7 +144,7 @@
    ========================= */
 .shop > .hero{
   /* Más compacto: 160–360px o ~28dvh según viewport */
-  min-height: clamp(160px, 28dvh, 360px);
+  min-height: clamp(160px, 28dvh, 200px);
   /* Contenido más arriba y menos aire inferior */
   place-items: start center;
   padding: 14px 0 4px;
@@ -153,7 +153,7 @@
 @supports not (height: 1dvh){
   .shop > .hero{
     /* Fallback para motores sin dvh */
-    min-height: clamp(160px, 28vh, 360px);
+    min-height: clamp(100px, 28vh, 200px);
   }
 }
 
