@@ -499,8 +499,75 @@
 .meta{ padding:16px; overflow:auto; }
 .meta .row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .meta .price{ font-weight:800; color:#f59e0b; }
+.meta .sizes{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 10px 0 12px;
+}
+.meta .sizes .lbl{
+  font-weight: 700;
+  font-size: 12px;
+  opacity: .8;
+  white-space: nowrap;
+}
+
+.meta .sizes-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.meta .sizes-row button{
+  min-width: 40px;
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, box-shadow .12s ease, transform .06s ease;
+  user-select: none;
+}
+.meta .sizes-row button:hover{ background: rgba(0,0,0,.05); }
+.meta .sizes-row button:active{ transform: translateY(1px); }
+
+/* Estado seleccionado (por clase o por aria-pressed) */
+.meta .sizes-row button.active,
+.meta .sizes-row button[aria-pressed="true"]{
+  background: #facc15;
+  color: #000;
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250,204,21,.25);
+}
+
+/* Accesibilidad: foco visible */
+.meta .sizes-row button:focus-visible{
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+
+/* Tema oscuro */
+:host.dark .meta .sizes-row button{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.02);
+}
+:host.dark .meta .sizes-row button:hover{
+  background: rgba(255,255,255,.08);
+}
+
+/* CTA coherente con deshabilitado cuando no hay talla seleccionada */
 .meta .cta{
-  padding:10px 14px; border-radius:12px; border:none; background:#facc15; color:#000; font-weight:800; cursor:pointer;
+  margin-top: 8px; padding:10px 14px; border-radius:12px; border:none; background:#facc15; color:#000; font-weight:800; cursor:pointer;
+}
+.meta .cta[disabled]{
+  pointer-events: none;
+  filter: saturate(.7);
 }
 
 /* =========================
@@ -710,6 +777,20 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   }
   .icon{ width: 22px; height: 22px; }
   .about-media img{ max-width: 500px; }
+
+  .meta .sizes{
+    grid-template-columns: 1fr;  /* etiqueta arriba, botones abajo */
+    gap: 6px;
+  }
+  .meta .sizes .lbl{
+    font-size: 12px;
+    opacity: .9;
+  }
+  .meta .sizes-row button{
+    min-height: 38px;      /* mejor área táctil */
+    min-width: 44px;       /* mínimo recomendado de tap */
+    padding: 10px 12px;
+  }
 }
 
 @media (max-width: 390px){
@@ -730,5 +811,10 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     width: 100%;
     max-width: 360px;              /* evita que “empuje” en móviles muy estrechos */
     border-radius: var(--radius);
+  }
+  .meta .sizes-row{ gap: 6px; }
+  .meta .sizes-row button{
+    padding: 9px 10px;
+    border-radius: 9px;
   }
 }
