@@ -446,19 +446,38 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 @media (max-width: 768px){
   .shop .filters-toggle{ display:inline-flex; }
   .shop-layout{ display:block; }
+  /* El wrapper del hero dentro del shop */
   .shop > .hero{
-    min-height: clamp(120px, 22dvh, 260px);
-    padding: 10px 0 2px;
+    /* quitamos altura forzada pensada para móvil */
+    min-height: auto;
+    padding: 8px 0 4px;           /* menos aire arriba/abajo */
   }
+
+  /* Título sin márgenes extra */
   .shop > .hero h1{
-    font-size: clamp(18px, 5vw, 32px);
-    font-weight: 600;
+    margin: 0;                    /* asegura que no herede márgenes del UA */
   }
+
+  /* Mensaje: más cerca y más grande */
   .shop > .hero p{
-    margin-top: 8px;
-    font-size: clamp(12px, 3.2vw, 15px);
-    max-width: 640px;
+    margin-top: 6px;              /* ↓ de 16px -> 6px */
+    font-size: clamp(18px, 1.4vw, 22px);
+    line-height: 1.45;
+    max-width: 820px;             /* un pelín más ancho en desktop */
   }
+
+  /* Cuando el hero va seguido del header de tienda, reduce el gap */
+  .shop > .hero + .shop-header{
+    margin-top: 8px;              /* ↓ de 12px -> 8px */
+  }
+
+  .shop > :first-child:not(.shop-header):not(.shop-layout) h1{ margin:0; }
+  .shop > :first-child:not(.shop-header):not(.shop-layout) p{
+    margin-top: 6px;
+    font-size: clamp(18px, 1.4vw, 22px);
+    line-height: 1.45;
+  }
+  .shop > :first-child:not(.shop-header):not(.shop-layout){ padding-bottom: 4px; }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
