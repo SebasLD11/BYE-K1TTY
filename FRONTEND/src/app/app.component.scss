@@ -309,10 +309,10 @@
    ABOUT (rehecho)
    ========================= */
 .about{
-  /* el <main> ya es .container -> esto es layout interno */
   display: grid;
   gap: 20px;
   padding: 24px 0;
+  isolation: isolate;           /* evita solapes raros en móvil */
 }
 
 .about-header{
@@ -338,7 +338,7 @@
   display: grid;
   gap: 20px;
   align-items: start;
-  grid-template-columns: 1fr; /* móvil por defecto */
+  grid-template-columns: 1fr;   /* móvil por defecto */
 }
 
 /* Imagen */
@@ -347,20 +347,23 @@
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0,0,0,.08);
+  position: relative;
+  z-index: 0;
+  pointer-events: none;         /* que la imagen no bloquee taps */
 }
 .about-media img{
   display: block;
-  width: 100%;          /* que respete el ancho de la columna */
-  max-width: 640px;     /* tamaño cómodo en desktop */
+  width: 100%;
   height: auto;
   object-fit: contain;
-  pointer-events: none; /* evita que “se coma” taps/scrolls en móvil */
 }
 
 /* Columna de contenido */
 .about-content{
   display: grid;
   gap: 20px;
+  position: relative;
+  z-index: 1;                   /* por encima de la imagen */
 }
 
 /* Contacto */
@@ -405,36 +408,28 @@
   z-index: 1;           /* por encima de cualquier imagen vecina */
 }
 .faq details{
-  border: 1px solid rgba(0,0,0,.08);
-  border-radius: 12px;
-  padding: 10px 12px;
-  background: rgba(0,0,0,.03);
-  position: relative;
-  overflow: visible;    /* por si el contenido crece */
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:12px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.03);
+  position:relative;
+  overflow:visible;
 }
 :host.dark .faq details{
   border-color: rgba(255,255,255,.08);
   background: rgba(255,255,255,.04);
 }
 .faq summary{
-  font-weight: 700;
-  outline: none;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
+  display:flex; align-items:center; justify-content:space-between;
+  font-weight:700; cursor:pointer; outline:none;
+  position: relative; z-index: 2;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.faq summary::-webkit-details-marker{ display: none; }
-.faq p{ margin: 8px 0 0 0; line-height: 1.5; }
-.faq summary::after{
-  content: "▾";
-  transform: rotate(0deg);
-  transition: transform .15s ease;
-}
-.faq details[open] summary::after{
-  transform: rotate(180deg);
-}
+.faq summary::-webkit-details-marker{ display:none; }
+.faq summary::after{ content:"▾"; transition:transform .15s ease; }
+.faq details[open] summary::after{ transform:rotate(180deg); }
+.faq p{ margin:8px 0 0; line-height:1.5; }
 
 
 /* =========================
@@ -587,24 +582,16 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     margin-top: 8px;                       /* ↓ de 12px */
   }
 
-  .about-grid{
-    grid-template-columns: minmax(360px, 1fr) minmax(0, 1.2fr);
-    align-items: start;
-    gap: 20px;
-  }
+  .about-grid{ grid-template-columns: 1fr; }
   .about-text{
     text-align: left;
   }
   .about p{
     margin: 0;                         /* ya no centramos */
   }
-  .about-media{
-    align-self: start;
-    justify-self: start;
-  }
-  .about-content{
-    align-self: start;
-  }
+  .about-media{ grid-column: 1 / -1; justify-self: center; }
+  .about-content{ grid-column: auto; }
+  .about-media img{ max-height: 72vh; } /* evita una foto desproporcionada */
 }
 
 @media (max-width: 768px){
