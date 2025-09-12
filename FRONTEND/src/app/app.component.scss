@@ -123,8 +123,8 @@
   min-height: calc(100dvh - var(--nav-h));
   display: grid;
   place-items: center;
-  /* 👇 Cambia la ruta por tu imagen */
-  background: url('../assets/img/BK.ripndip.png') center / cover no-repeat;
+  background: center/cover no-repeat;
+  background-image: url("/assets/img/BK.ripndip.png"); /* <- OJO: empieza por / */
   overflow: clip;
   isolation: isolate;
   margin: 0; /* full-bleed */
