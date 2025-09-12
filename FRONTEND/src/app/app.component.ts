@@ -22,6 +22,8 @@ export class AppComponent {
 
     @HostBinding('class.dark') 
     dark = typeof window !== 'undefined' && localStorage.getItem('bk-theme') === 'dark';
+    // Muestra el banner solo la primera vez por sesión
+    showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');
 
     tab = signal<'home'|'shop'|'about'>('shop');
     products = signal<Product[]>([]);
@@ -29,7 +31,6 @@ export class AppComponent {
     imgIndex = 0;
     cartOpen = false;
     selectedSize: string | null = null;
-    introOpen = true;
 
     // ✅ fallback centralizado
     readonly FALLBACK_IMG = 'assets/img/placeholder.png';
@@ -82,7 +83,9 @@ export class AppComponent {
         });
         // ✅ Mejora accesible (opcional): bloquear scroll y hacer inerte el fondo
         effect(() => {
-            const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected;
+            // El banner sólo cuenta como overlay cuando estás en la pestaña shop
+            const entryOpen = this.tab() === 'shop' && this.showEntry;
+            const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected || entryOpen;
 
             // Bloquea scroll del body
             document.body.classList.toggle('no-scroll', overlayOpen);
@@ -90,8 +93,9 @@ export class AppComponent {
             // Marca fondo como inert cuando hay MODAL (producto) o CARRITO
             const main = document.querySelector('main') as HTMLElement | null;
             const topnav = document.querySelector('.topnav') as HTMLElement | null;
-            if (main) (main as any).inert = !!(this.selected || this.cartOpen);
-            if (topnav) (topnav as any).inert = !!(this.selected || this.cartOpen);
+            const inert = !!(this.selected || this.cartOpen || entryOpen);
+            if (main) (main as any).inert = inert;
+            if (topnav) (topnav as any).inert = inert;
 
             // Gestión de foco: al abrir, enfoca botón cerrar del overlay
             queueMicrotask(() => {
@@ -176,6 +180,15 @@ export class AppComponent {
         const items = this.cartSvc.toCheckoutItems(); // [{id, qty, size}]
         if(!items.length) return;
         this.checkout.createSession(items).subscribe(({url}) => window.location.href = url);
+    }
+
+    enterShop(){
+        this.showEntry = false;
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('bk-entry','1');
+            // Baja a la tienda (asegúrate de que el <section class="shop"> tenga id="shopTop")
+            setTimeout(() => document.getElementById('shopTop')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+        }
     }
 
     // ⌨️ Accesos rápidos: ← → y Escape

@@ -35,16 +35,12 @@
     </div>
   </div>
 </header>
-<!-- ENTRY BANNER (pantalla completa) -->
-<section *ngIf="introOpen" class="entry-banner" aria-label="Bienvenida">
-  <div class="inner">
+<!-- BANNER DE ENTRADA (full screen) -->
+<section *ngIf="tab()==='shop' && showEntry" class="entry-banner" role="dialog" aria-modal="true">
+  <div class="entry-bg"></div>
+  <div class="entry-inner">
     <h1>byek1tty.com</h1>
-    <button
-      type="button"
-      class="entry-cta"
-      (click)="introOpen=false; tab.set('shop')">
-      Entrar a la tienda
-    </button>
+    <button type="button" class="cta" (click)="enterShop()">Entrar a la tienda</button>
   </div>
 </section>
 <main class="container">
@@ -160,7 +156,7 @@
   <!-- ABOUT -->
   <section *ngIf="tab()==='about'" class="about">
     <!-- Hero de bienvenida (ahora en About) -->
-    <div class="hero hero--welcome">
+    <div class="hero about-hero">
       <h1>Bienvenido/a a BYE K1TTY</h1>
       <p>
         Aquí encontrarás al detalle cada pieza exclusiva y colecciones que se lanzan. Espero que disfrutes de la
