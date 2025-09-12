@@ -35,14 +35,14 @@
     </div>
   </div>
 </header>
-<!-- BANNER DE ENTRADA (full screen) -->
-<section *ngIf="showEntry" class="entry-banner" role="dialog" aria-modal="true">
-  <div class="inner">
-    <h1>byek1tty.com</h1>
-    <button class="entry-cta" (click)="enterShop()">Entrar a la tienda</button>
-  </div>
-</section>
 <main class="container">
+  <!-- BANNER DE ENTRADA (full screen) -->
+  <section *ngIf="showEntry" class="entry-banner" role="dialog" aria-modal="true">
+    <div class="inner">
+      <h1>byek1tty.com</h1>
+      <button class="entry-cta" (click)="enterShop()">Entrar a la tienda</button>
+    </div>
+  </section>
   <!-- SHOP -->
   <section *ngIf="tab()==='shop'" class="shop" id="shopTop">
     <div class="shop-header">
