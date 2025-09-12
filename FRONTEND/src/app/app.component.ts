@@ -22,8 +22,6 @@ export class AppComponent {
 
     @HostBinding('class.dark') 
     dark = typeof window !== 'undefined' && localStorage.getItem('bk-theme') === 'dark';
-    // Muestra el banner solo la primera vez por sesión
-    showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');
 
     tab = signal<'home'|'shop'|'about'>('shop');
     products = signal<Product[]>([]);
@@ -31,6 +29,8 @@ export class AppComponent {
     imgIndex = 0;
     cartOpen = false;
     selectedSize: string | null = null;
+    // Muestra el banner solo la primera vez por sesión
+    showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');
 
     // ✅ fallback centralizado
     readonly FALLBACK_IMG = 'assets/img/placeholder.png';
@@ -69,12 +69,8 @@ export class AppComponent {
 
     constructor(){
         this.productSvc.list().subscribe(ps => {
-            const normalized = ps.map(p => ({
-                ...p,
-                images: (p.images ?? []).map(src => this.normalizeAsset(src))
-            }));
+            const normalized = ps.map(p => ({ ...p, images: (p.images ?? []).map(src => this.normalizeAsset(src)) }));
             this.products.set(normalized);
-            // inicializar rango de precios
             const prices = normalized.map(p => Number(p.price)).filter(n => !isNaN(n));
             const min = prices.length ? Math.min(...prices) : 0;
             const max = prices.length ? Math.max(...prices) : 0;
@@ -184,27 +180,29 @@ export class AppComponent {
 
     enterShop(){
         this.showEntry = false;
-        this.tab.set('shop');                 // por si no estabas en Shop
+        this.tab.set('shop');
+
+        // 🔧 HOTFIX: limpia el bloqueo que dejó el effect inicial
+        try {
+            document.body.classList.remove('no-scroll');
+            const main = document.querySelector('main') as HTMLElement | null;
+            const topnav = document.querySelector('.topnav') as HTMLElement | null;
+            if (main) (main as any).inert = false;
+            if (topnav) (topnav as any).inert = false;
+        } catch {}
+
         if (typeof window !== 'undefined') {
             sessionStorage.setItem('bk-entry','1');
-
-            // Espera a que Angular repinte sin el banner
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    const target =
-                    document.getElementById('shopTop') ||
-                    (document.querySelector('.shop') as HTMLElement | null);
-
-                    if (target) {
-                        // usa scroll-margin-top en CSS (abajo) para compensar la nav sticky
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    } else {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    }
+                    const target = document.getElementById('shopTop') || (document.querySelector('.shop') as HTMLElement | null);
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    else window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             });
         }
     }
+
 
     // ⌨️ Accesos rápidos: ← → y Escape
     @HostListener('window:keydown', ['$event'])
