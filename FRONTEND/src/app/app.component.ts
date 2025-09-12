@@ -184,17 +184,25 @@ export class AppComponent {
 
     enterShop(){
         this.showEntry = false;
-        this.tab.set('shop'); // por si el usuario estaba en otra pestaña
+        this.tab.set('shop');                 // por si no estabas en Shop
         if (typeof window !== 'undefined') {
             sessionStorage.setItem('bk-entry','1');
-            // intenta #shopTop; si no, la primera .shop; fallback scrollTop
-            setTimeout(() => {
-                const target =
-                document.getElementById('shopTop') ||
-                document.querySelector('.shop') as HTMLElement | null;
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                else window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 0);
+
+            // Espera a que Angular repinte sin el banner
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const target =
+                    document.getElementById('shopTop') ||
+                    (document.querySelector('.shop') as HTMLElement | null);
+
+                    if (target) {
+                        // usa scroll-margin-top en CSS (abajo) para compensar la nav sticky
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    } else {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+            });
         }
     }
 
