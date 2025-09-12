@@ -124,7 +124,7 @@
   display: grid;
   place-items: center;
   /* 👇 Cambia la ruta por tu imagen */
-  background: url('assets/img/BK.ripndip.png') center / cover no-repeat;
+  background: url('../assets/img/BK.ripndip.png') center / cover no-repeat;
   overflow: clip;
   isolation: isolate;
   margin: 0; /* full-bleed */
@@ -163,11 +163,6 @@
 }
 .entry-banner .entry-cta:hover{ transform: translateY(-1px); }
 .entry-banner .entry-cta:active{ transform: translateY(0); }
-
-/* =========================
-   HERO embebido en SHOP (manda)
-   ========================= */
-.shop > .shop-header{ margin-top: 8px; }
 
 /* =========================
    SHOP: header + layout
