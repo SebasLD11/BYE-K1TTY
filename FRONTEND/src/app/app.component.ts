@@ -184,12 +184,18 @@ export class AppComponent {
 
     enterShop(){
         this.showEntry = false;
+        this.tab.set('shop'); // por si el usuario estaba en otra pestaña
         if (typeof window !== 'undefined') {
             sessionStorage.setItem('bk-entry','1');
+            // intenta #shopTop; si no, la primera .shop; fallback scrollTop
+            setTimeout(() => {
+                const target =
+                document.getElementById('shopTop') ||
+                document.querySelector('.shop') as HTMLElement | null;
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 0);
         }
-        // por si no estás en la pestaña Shop, cámbiala antes de hacer scroll:
-        this.tab.set('shop');
-        setTimeout(() => document.getElementById('shopTop')?.scrollIntoView({ behavior:'smooth', block:'start' }), 0);
     }
 
     // ⌨️ Accesos rápidos: ← → y Escape

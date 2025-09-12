@@ -145,7 +145,7 @@
   filter: brightness(1.12) contrast(1.03);/* un poco más luminosa */
   z-index: 0;
   /* opcional: color de fondo detrás de las “bandas” */
-  background: #0b0b0b;
+  background: #ffffff;
 }
 
 /* Contenido: título centrado y botón anclado abajo */
@@ -163,7 +163,7 @@
     16px
     calc(max(24px, env(safe-area-inset-bottom)))
     16px;
-  color: #fff;
+  color: #141414;
 }
 
 .entry-banner h1{
@@ -693,7 +693,12 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 768px){
-  .entry-banner{ inset: var(--nav-h) 0 0 0; min-height: calc(100dvh - var(--nav-h)); }
+  /* usa las nuevas unidades para pantalla completa real en móvil */
+  .entry-banner{
+    min-height: calc(100svh - var(--nav-h));
+    /* encuadre un poco más centrado en móvil */
+    --entry-y: 52%;
+  }
   .entry-banner h1{ font-size: clamp(30px, 11vw, 64px); }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
@@ -825,8 +830,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 390px){
-  .entry-banner h1{ font-size: clamp(28px, 12vw, 54px); }
-  .filters{ width: 92vw; }
+  .entry-banner{ --entry-y: 55%; }
+  .entry-banner h1{ font-size: clamp(28px, 12vw, 54px); }  .filters{ width: 92vw; }
   .logo-img{ width:32px; height:32px; }
   .brand-text{ font-size: 13px; max-width: 26vw; }
   .about{
