@@ -80,8 +80,7 @@ export class AppComponent {
         // ✅ Mejora accesible (opcional): bloquear scroll y hacer inerte el fondo
         effect(() => {
             // en el effect(): ya no depende de tab
-            const entryOpen = this.showEntry;
-            const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected || entryOpen;
+            const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected;
 
             // Bloquea scroll del body
             document.body.classList.toggle('no-scroll', overlayOpen);
@@ -89,7 +88,7 @@ export class AppComponent {
             // Marca fondo como inert cuando hay MODAL (producto) o CARRITO
             const main = document.querySelector('main') as HTMLElement | null;
             const topnav = document.querySelector('.topnav') as HTMLElement | null;
-            const inert = !!(this.selected || this.cartOpen || entryOpen);
+            const inert = !!(this.selected || this.cartOpen );
             if (main) (main as any).inert = inert;
             if (topnav) (topnav as any).inert = inert;
 
