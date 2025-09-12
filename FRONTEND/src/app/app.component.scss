@@ -12,6 +12,7 @@
   --z-modal: 10020;   /* modal producto */
   --z-drawer: 10030;  /* carrito */
   --z-filters: 10040; /* sheet filtros móvil */
+  --z-entry: 10050; /* ✅ NUEVO: por encima de todo */
 }
 
 :host{
@@ -117,52 +118,35 @@
 /* =========================
    ENTRY BANNER (full-screen)
    ========================= */
+/* ENTRY BANNER como overlay */
 .entry-banner{
-  position: relative;
-  /* Rellena la pantalla útil descontando la barra sticky */
-  min-height: calc(100dvh - var(--nav-h));
+  position: fixed;          /* ✅ de relativo -> fijo */
+  inset: var(--nav-h) 0 0 0;/* ocupa todo debajo de la topnav */
+  z-index: var(--z-entry);  /* por encima de la tienda */
   display: grid;
   place-items: center;
+  min-height: calc(100dvh - var(--nav-h));
   background: center/cover no-repeat;
-  background-image: url("/assets/img/BK.ripndip.png"); /* <- OJO: empieza por / */
-  overflow: clip;
+  background-image: url("/assets/img/BK.ripndip.png");
   isolation: isolate;
-  margin: 0; /* full-bleed */
+  overflow: clip;
+  margin: 0;
 }
 .entry-banner::before{
-  content: "";
-  position: absolute; inset: 0;
+  content:""; position:absolute; inset:0;
   background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
-  z-index: 0;
+  z-index:0;
 }
-:host.dark .entry-banner::before{
-  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.75));
+.entry-banner .inner{ position:relative; z-index:1; text-align:center; padding:clamp(16px,4vw,32px); color:#fff; }
+.entry-banner h1{ margin:0 0 16px; font-weight:900; letter-spacing:.04em; font-size:clamp(36px,8vw,92px); line-height:1.05; text-transform:lowercase; }
+.entry-banner .entry-cta{ 
+  padding:12px 18px; border:none; 
+  border-radius:14px; background:#facc15; 
+  color:#000; font-weight:900; cursor:pointer; 
+  transition:transform .1s, box-shadow .15s; box-shadow:0 8px 30px rgba(0,0,0,.25); 
 }
-
-.entry-banner .inner{
-  position: relative; z-index: 1;
-  text-align: center;
-  padding: clamp(16px, 4vw, 32px);
-  color: #fff;
-}
-.entry-banner h1{
-  margin: 0 0 16px;
-  font-weight: 900;
-  letter-spacing: .04em;
-  font-size: clamp(36px, 8vw, 92px);
-  line-height: 1.05;
-  text-transform: lowercase;
-}
-.entry-banner .entry-cta{
-  padding: 12px 18px;
-  border: none; border-radius: 14px;
-  background: #facc15; color: #000;
-  font-weight: 900; cursor: pointer;
-  transition: transform .1s ease, box-shadow .15s ease;
-  box-shadow: 0 8px 30px rgba(0,0,0,.25);
-}
-.entry-banner .entry-cta:hover{ transform: translateY(-1px); }
-.entry-banner .entry-cta:active{ transform: translateY(0); }
+.entry-banner .entry-cta:hover{ transform:translateY(-1px); }
+.entry-banner .entry-cta:active{ transform:translateY(0); }
 
 /* =========================
    SHOP: header + layout
@@ -322,7 +306,7 @@
   isolation: isolate;            /* evita solapes con la imagen */
 }
 
-.about .hero--welcome{
+.about .about-hero{
   /* anula la base genérica del .hero y lo compacta */
   min-height: auto;
   padding: 12px 0 8px;
@@ -330,13 +314,13 @@
   place-items: center;
   text-align: center;
 }
-.about .hero--welcome h1{
+.about .about-hero h1{
   margin: 0;
   font-size: clamp(22px, 3.2vw, 42px);
   font-weight: 800;
   line-height: 1.15;
 }
-.about .hero--welcome p{
+.about .about-hero p{
   margin: 6px auto 0;
   max-width: 820px;
   font-size: clamp(15px, 1.2vw, 18px);
@@ -667,15 +651,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 768px){
-  .entry-banner{
-    min-height: calc(100dvh - var(--nav-h));
-    background-position: center;
-  }
+  .entry-banner{ inset: var(--nav-h) 0 0 0; min-height: calc(100dvh - var(--nav-h)); }
   .entry-banner h1{ font-size: clamp(30px, 11vw, 64px); }
-  .entry-banner .entry-cta{ padding: 12px 16px; }
-
-  .shop .filters-toggle{ display:inline-flex; }
-  .shop-layout{ display:block; }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
@@ -807,15 +784,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
 @media (max-width: 390px){
   .entry-banner h1{ font-size: clamp(28px, 12vw, 54px); }
-  .entry-banner .entry-cta{ border-radius: 12px; }
   .filters{ width: 92vw; }
   .logo-img{ width:32px; height:32px; }
   .brand-text{ font-size: 13px; max-width: 26vw; }
   .about{
     padding: 12px 0 20px;          /* aún más recogido */
   }
-  .about .hero--welcome h1{ font-size: 22px; }
-  .about .hero--welcome p{ font-size: 15px; }
+  .about .about-hero h1{ font-size: 22px; }
+  .about .about-hero p{ font-size: 15px; }
   .about-grid{
     gap: 20px;                     /* seguimos con 20px entre bloques */
   }

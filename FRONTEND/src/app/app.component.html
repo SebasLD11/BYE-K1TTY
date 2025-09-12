@@ -37,10 +37,9 @@
 </header>
 <!-- BANNER DE ENTRADA (full screen) -->
 <section *ngIf="tab()==='shop' && showEntry" class="entry-banner" role="dialog" aria-modal="true">
-  <div class="entry-bg"></div>
-  <div class="entry-inner">
+  <div class="inner">
     <h1>byek1tty.com</h1>
-    <button type="button" class="cta" (click)="enterShop()">Entrar a la tienda</button>
+    <button class="entry-cta" (click)="enterShop()">Entrar a la tienda</button>
   </div>
 </section>
 <main class="container">
