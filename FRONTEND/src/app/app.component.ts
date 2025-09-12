@@ -29,6 +29,7 @@ export class AppComponent {
     imgIndex = 0;
     cartOpen = false;
     selectedSize: string | null = null;
+    introOpen = true;
 
     // ✅ fallback centralizado
     readonly FALLBACK_IMG = 'assets/img/placeholder.png';
