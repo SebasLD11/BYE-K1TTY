@@ -120,33 +120,26 @@
    ========================= */
 /* ENTRY BANNER como overlay */
 .entry-banner{
-  position: fixed;          /* ✅ de relativo -> fijo */
-  inset: var(--nav-h) 0 0 0;/* ocupa todo debajo de la topnav */
-  z-index: var(--z-entry);  /* por encima de la tienda */
+  position: fixed;
+  inset: 0;                          /* ocupa TODA la pantalla */
+  z-index: 2147483646 !important;    /* por encima de todo (drawer/filtros/etc.) */
   display: grid;
   place-items: center;
-  min-height: calc(100dvh - var(--nav-h));
   background: center/cover no-repeat;
   background-image: url("/assets/img/BK.ripndip.png");
   isolation: isolate;
   overflow: clip;
-  margin: 0;
+  padding-top: var(--nav-h);         /* deja respirar debajo de la topnav si quieres */
 }
 .entry-banner::before{
-  content:""; position:absolute; inset:0;
+  content: "";
+  position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
-  z-index:0;
 }
-.entry-banner .inner{ position:relative; z-index:1; text-align:center; padding:clamp(16px,4vw,32px); color:#fff; }
+.entry-banner .inner{ position: relative; z-index: 1; text-align: center; color:#fff; padding: clamp(16px,4vw,32px); }
 .entry-banner h1{ margin:0 0 16px; font-weight:900; letter-spacing:.04em; font-size:clamp(36px,8vw,92px); line-height:1.05; text-transform:lowercase; }
-.entry-banner .entry-cta{ 
-  padding:12px 18px; border:none; 
-  border-radius:14px; background:#facc15; 
-  color:#000; font-weight:900; cursor:pointer; 
-  transition:transform .1s, box-shadow .15s; box-shadow:0 8px 30px rgba(0,0,0,.25); 
-}
-.entry-banner .entry-cta:hover{ transform:translateY(-1px); }
-.entry-banner .entry-cta:active{ transform:translateY(0); }
+.entry-banner .entry-cta{ padding:12px 18px; border:none; border-radius:14px; background:#facc15; color:#000; font-weight:900; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.25); }
+
 
 /* =========================
    SHOP: header + layout
