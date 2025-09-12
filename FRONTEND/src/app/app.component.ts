@@ -83,8 +83,8 @@ export class AppComponent {
         });
         // ✅ Mejora accesible (opcional): bloquear scroll y hacer inerte el fondo
         effect(() => {
-            // El banner sólo cuenta como overlay cuando estás en la pestaña shop
-            const entryOpen = this.tab() === 'shop' && this.showEntry;
+            // en el effect(): ya no depende de tab
+            const entryOpen = this.showEntry;
             const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected || entryOpen;
 
             // Bloquea scroll del body
@@ -186,9 +186,10 @@ export class AppComponent {
         this.showEntry = false;
         if (typeof window !== 'undefined') {
             sessionStorage.setItem('bk-entry','1');
-            // Baja a la tienda (asegúrate de que el <section class="shop"> tenga id="shopTop")
-            setTimeout(() => document.getElementById('shopTop')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
         }
+        // por si no estás en la pestaña Shop, cámbiala antes de hacer scroll:
+        this.tab.set('shop');
+        setTimeout(() => document.getElementById('shopTop')?.scrollIntoView({ behavior:'smooth', block:'start' }), 0);
     }
 
     // ⌨️ Accesos rápidos: ← → y Escape

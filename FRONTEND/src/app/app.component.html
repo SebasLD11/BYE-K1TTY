@@ -36,7 +36,7 @@
   </div>
 </header>
 <!-- BANNER DE ENTRADA (full screen) -->
-<section *ngIf="tab()==='shop' && showEntry" class="entry-banner" role="dialog" aria-modal="true">
+<section *ngIf="showEntry" class="entry-banner" role="dialog" aria-modal="true">
   <div class="inner">
     <h1>byek1tty.com</h1>
     <button class="entry-cta" (click)="enterShop()">Entrar a la tienda</button>
@@ -44,7 +44,7 @@
 </section>
 <main class="container">
   <!-- SHOP -->
-  <section *ngIf="tab()==='shop'" class="shop">
+  <section *ngIf="tab()==='shop'" class="shop" id="shopTop">
     <div class="shop-header">
       <h2>Tienda</h2>
       <div class="right-actions">
