@@ -165,47 +165,9 @@
 .entry-banner .entry-cta:active{ transform: translateY(0); }
 
 /* =========================
-   HERO (base)
-   ========================= */
-.hero{
-  /* base genérica si se usa fuera de shop */
-  min-height: 32vh;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  padding: 10px 0;
-}
-
-.hero h1{
-  font-size: clamp(20px, 3.2vw, 42px);
-  font-weight: 600;
-  line-height: 1.15;
-  margin: 0;
-}
-.hero p{
-  opacity: .85;
-  max-width: 400px;
-  margin: 10px auto 0;       /* menos separación bajo el título */
-  font-size: clamp(13px, 2.4vw, 16px);
-}
-
-/* =========================
    HERO embebido en SHOP (manda)
    ========================= */
-/* HERO compacto dentro de SHOP */
-.shop > .hero{
-  min-height: auto;
-  padding: 8px 0 4px;
-  place-items: center;
-}
-.shop > .hero h1{ margin: 0; }
-.shop > .hero p{
-  margin-top: 6px;
-  font-size: clamp(18px, 1.1vw, 22px);
-  line-height: 1.45;
-  max-width: 820px;
-}
-.shop > .hero + .shop-header{ margin-top: 8px; }
+.shop > .shop-header{ margin-top: 8px; }
 
 /* =========================
    SHOP: header + layout
@@ -363,6 +325,28 @@
   gap: 20px;
   padding: 24px 0;
   isolation: isolate;            /* evita solapes con la imagen */
+}
+
+.about .hero--welcome{
+  /* anula la base genérica del .hero y lo compacta */
+  min-height: auto;
+  padding: 12px 0 8px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.about .hero--welcome h1{
+  margin: 0;
+  font-size: clamp(22px, 3.2vw, 42px);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.about .hero--welcome p{
+  margin: 6px auto 0;
+  max-width: 820px;
+  font-size: clamp(15px, 1.2vw, 18px);
+  line-height: 1.5;
+  opacity: .9;
 }
 
 .about-header{
@@ -669,27 +653,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .shop-layout{ grid-template-columns: 260px 1fr; gap: 16px; }
    /* Opcional: aún más recogido en altura total */
    /* Quita altura forzada y reduce padding vertical */
-  .shop > .hero{
-    min-height: auto;          /* antes: clamp(..., 28dvh, ...) */
-    padding: 8px 0 4px;        /* menos aire arriba/abajo */
-    place-items: center;       /* centrado limpio */
-  }
-
-  /* Título sin margen extra */
-  .shop > .hero h1{
-    margin: 0;
-  }
-
-  /* Mensaje: más cerca del H1 y más grande */
-  .shop > .hero p{
-    margin-top: 6px;                       /* ↓ antes 10–16px */
-    font-size: clamp(18px, 1.1vw, 22px);   /* quita el tope de 16px */
-    line-height: 1.45;
-    max-width: 820px;                      /* un poco más ancho en desktop */
-  }
-
   /* Reduce el hueco entre hero y “Tienda” */
-  .shop > .hero + .shop-header{
+  .shop > .shop-header{
     margin-top: 8px;                       /* ↓ de 12px */
   }
 
@@ -716,19 +681,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
   .shop .filters-toggle{ display:inline-flex; }
   .shop-layout{ display:block; }
-  .shop > .hero{
-    min-height: clamp(120px, 22dvh, 260px);
-    padding: 10px 0 2px;
-  }
-  .shop > .hero h1{
-    font-size: clamp(18px, 5vw, 32px);
-    font-weight: 600;
-  }
-  .shop > .hero p{
-    margin-top: 8px;
-    font-size: clamp(12px, 3.2vw, 15px);
-    max-width: 640px;
-  }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
@@ -813,6 +765,13 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     padding: 16px 0 24px;          /* un poco más compacto */
     isolation: isolate;
   }
+  .about .hero--welcome{
+    padding: 10px 0 6px;
+  }
+  .about .hero--welcome p{
+    font-size: clamp(14px, 3.2vw, 16px);
+    max-width: 640px;
+  }
   .about-content{ position: relative; z-index: 1; }
   .about-media{ position: relative; z-index: 0; }
   .about-grid{
@@ -860,6 +819,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .about{
     padding: 12px 0 20px;          /* aún más recogido */
   }
+  .about .hero--welcome h1{ font-size: 22px; }
+  .about .hero--welcome p{ font-size: 15px; }
   .about-grid{
     gap: 20px;                     /* seguimos con 20px entre bloques */
   }
