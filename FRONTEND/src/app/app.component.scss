@@ -121,25 +121,74 @@
 /* ENTRY BANNER como overlay */
 .entry-banner{
   position: fixed;
-  inset: 0;                          /* ocupa TODA la pantalla */
-  z-index: 2147483646 !important;    /* por encima de todo (drawer/filtros/etc.) */
+  inset: 0;                               /* ocupa todo el viewport */
+  z-index: 2147483646 !important;         /* por encima de todo */
+  min-height: 100vh;                      /* fallback */
+  min-height: 100dvh;                     /* navegadores modernos */
+  min-height: 100svh;                     /* iOS 16+ */
   display: grid;
-  place-items: center;
-  background: center/cover no-repeat;
-  background-image: url("/assets/img/BK.ripndip.png");
-  isolation: isolate;
-  overflow: clip;
-  padding-top: var(--nav-h);         /* deja respirar debajo de la topnav si quieres */
+  /* capa oscura muy suave para legibilidad (ahora más luminosa) */
 }
 .entry-banner::before{
-  content: "";
-  position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,.35), rgba(0,0,0,.55));
+  content:"";
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.30));
+  z-index: 1;
 }
-.entry-banner .inner{ position: relative; z-index: 1; text-align: center; color:#fff; padding: clamp(16px,4vw,32px); }
-.entry-banner h1{ margin:0 0 16px; font-weight:900; letter-spacing:.04em; font-size:clamp(36px,8vw,92px); line-height:1.05; text-transform:lowercase; }
-.entry-banner .entry-cta{ padding:12px 18px; border:none; border-radius:14px; background:#facc15; color:#000; font-weight:900; cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,.25); }
 
+/* La imagen nunca se recorta: se contiene y se centra */
+.entry-bg{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit: contain;                    /* <- sin recortes */
+  object-position: center center;         /* centrada */
+  filter: brightness(1.12) contrast(1.03);/* un poco más luminosa */
+  z-index: 0;
+  /* opcional: color de fondo detrás de las “bandas” */
+  background: #0b0b0b;
+}
+
+/* Contenido: título centrado y botón anclado abajo */
+.entry-banner .inner{
+  position: relative; z-index: 2;         /* por encima del overlay */
+  display: grid;
+  grid-template-rows: 1fr auto;           /* centro | botón abajo */
+  align-items: center;
+  justify-items: center;
+  width: min(100%, var(--container));
+  height: 100%;
+  margin: 0 auto;
+  padding:
+    calc(max(16px, env(safe-area-inset-top)))
+    16px
+    calc(max(24px, env(safe-area-inset-bottom)))
+    16px;
+  color: #fff;
+}
+
+.entry-banner h1{
+  margin: 0 0 clamp(10px, 2vh, 20px);  /* espacio encima del botón */
+  font-weight: 900;
+  letter-spacing: .04em;
+  font-size: clamp(36px, 8vw, 92px);
+  line-height: 1.05;
+  text-align: center;
+  text-transform: lowercase;
+  align-self: end;                      /* queda en el centro vertical */
+}
+
+.entry-banner .entry-cta{
+  align-self: end;                         /* baja al borde inferior */
+  margin-bottom: clamp(16px, 4vh, 40px);   /* aire con safe-area */
+  padding: 12px 18px;
+  border: none; border-radius: 14px;
+  background: #facc15; color: #000;
+  font-weight: 900; cursor: pointer;
+  transition: transform .1s ease, box-shadow .15s ease;
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+.entry-banner .entry-cta:hover{ transform: translateY(-1px); }
+.entry-banner .entry-cta:active{ transform: translateY(0); }
 
 /* =========================
    SHOP: header + layout
