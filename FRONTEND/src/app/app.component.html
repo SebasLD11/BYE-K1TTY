@@ -37,10 +37,9 @@
 </header>
 <main class="container">
   <!-- BANNER DE ENTRADA (full screen) -->
-  <section *ngIf="showEntry" class="entry-banner" role="dialog" aria-modal="true">
+  <section *ngIf="showEntry" class="entry-banner" role="dialog" aria-modal="true" aria-label="Entrar a la tienda">
     <img class="entry-bg" src="assets/img/BK.ripndip.png" alt="" aria-hidden="true" />
     <div class="inner">
-      <h1>byek1tty.com</h1>
       <button class="entry-cta" (click)="enterShop()">Entrar a la tienda</button>
     </div>
   </section>

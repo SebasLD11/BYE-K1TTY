@@ -129,17 +129,12 @@
   display: grid;
   /* capa oscura muy suave para legibilidad (ahora más luminosa) */
 }
-.entry-banner::before{
-  content:"";
-  position:absolute; inset:0;
-  background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.30));
-  z-index: 1;
-}
+/* ❌ sin overlay oscuro */
+.entry-banner::before{ content: none; }
 /* La nav es sticky: evita que tape el ancla de la tienda */
 #shopTop { scroll-margin-top: calc(var(--nav-h) + 8px); }
 
 /* Asegura que el overlay no bloquee el click con el véu */
-.entry-banner::before,
 .entry-banner::after { pointer-events: none; }
 
 /* La imagen nunca se recorta: se contiene y se centra */
@@ -156,34 +151,16 @@
 
 /* Contenido: título centrado y botón anclado abajo */
 .entry-banner .inner{
-  position: relative; z-index: 2;         /* por encima del overlay */
-  display: grid;
-  grid-template-rows: 1fr auto;           /* centro | botón abajo */
-  align-items: center;
-  justify-items: center;
-  width: min(100%, var(--container));
-  height: 100%;
-  margin: 0 auto;
-  padding:
-    calc(max(16px, env(safe-area-inset-top)))
-    16px
-    calc(max(24px, env(safe-area-inset-bottom)))
-    16px;
-  color: #f3e9e9;
-}
-
-.entry-banner h1{
-  margin: 0 0 clamp(10px, 2vh, 20px);  /* espacio encima del botón */
-  font-weight: 900;
-  letter-spacing: .04em;
-  font-size: clamp(36px, 8vw, 92px);
-  line-height: 1.05;
-  text-align: center;
-  text-transform: lowercase;
-  align-self: end;                      /* queda en el centro vertical */
+  position: absolute;
+  left: 0; right: 0;
+  bottom: clamp(24px, 6vh, 72px);   /* margen inferior adaptable */
+  display: flex;
+  justify-content: center;
+  pointer-events: none;             /* evita que capture toda la capa */
 }
 
 .entry-banner .entry-cta{
+  pointer-events: auto;
   align-self: end;                         /* baja al borde inferior */
   margin-bottom: clamp(16px, 4vh, 40px);   /* aire con safe-area */
   padding: 12px 18px;
@@ -195,6 +172,12 @@
 }
 .entry-banner .entry-cta:hover{ transform: translateY(-1px); }
 .entry-banner .entry-cta:active{ transform: translateY(0); }
+
+@supports (height: 100svh){
+  .entry-banner{
+    min-height: calc(100svh - var(--nav-h));
+  }
+}
 
 /* =========================
    SHOP: header + layout
@@ -676,7 +659,6 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 1024px){
-  .entry-banner h1{ font-size: clamp(34px, 10vw, 76px); }
   .shop-layout{ grid-template-columns: 260px 1fr; gap: 16px; }
    /* Opcional: aún más recogido en altura total */
    /* Quita altura forzada y reduce padding vertical */
@@ -698,26 +680,13 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   }
 }
 
-@media (max-width: 768px){
-  
-  /* que ocupe toda la pantalla real del móvil */
-  .entry-banner{
-    min-height: 100svh; /* quitamos el - var(--nav-h) para evitar recortes raros */
+@media (max-width: 768px){ 
+  .entry-banner .inner{
+    bottom: clamp(16px, 8vh, 48px);
   }
-
-  /* la imagen debe seguir “pegada” al contenedor, detrás del contenido */
-  .entry-bg{
-    position: absolute;   /* <-- antes: relative (rompía el overlay) */
-    inset: 0;             /* asegura cubrir todo el banner */
-    width: 100%;
-    height: 100%;
-    object-fit: cover;    /* bien para móvil */
-    /* usa tu variable para ajustar el encuadre vertical sin tocar el asset */
-    object-position: 50% var(--entry-y, 50%);
+  .entry-banner .entry-cta{
+    padding: 12px 16px;
   }
-
-  .entry-banner h1{ font-size: clamp(30px, 11vw, 64px); }
-
   /* 1) Quita la columna fantasma: una sola columna en móvil */
   .shop-layout{
     grid-template-columns: 1fr;
@@ -879,8 +848,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 390px){
-  .entry-banner{ --entry-y: 55%; }
-  .entry-banner h1{ font-size: clamp(28px, 12vw, 54px); }  .filters{ width: 92vw; }
+  .entry-banner .inner{
+    bottom: clamp(12px, 9vh, 40px);
+  }
+  .entry-banner .entry-cta{
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
   /* 1) Quita la columna fantasma: una sola columna en móvil */
   .shop-layout{
     grid-template-columns: 1fr;
