@@ -734,6 +734,21 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     max-width: 100%;    /* o pon un clamp si quieres limitar el ancho */
     /* gap ya lo fijas a 20px arriba; mantenlo si te gusta */
   }
+  /* 1) Mostrar el botón en móvil */
+  .shop .filters-toggle{
+    display: inline-flex;          /* antes estaba en display:none */
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 2) Evitar que las tags se “coman” el espacio del botón */
+  .right-actions{
+    flex-wrap: wrap;               /* permite que el botón salte de línea si hace falta */
+    gap: 10px;
+  }
+
+  /* Opción A (recomendada): ocultar tags en móvil para dar aire */
+  .tags{ display: none; }
 
   /* Hoja lateral fija, aislada y por encima del catálogo */
   .filters{
@@ -882,6 +897,22 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     max-width: 100%;    /* o pon un clamp si quieres limitar el ancho */
     /* gap ya lo fijas a 20px arriba; mantenlo si te gusta */
   }
+  /* 1) Mostrar el botón en móvil */
+  .shop .filters-toggle{
+    display: inline-flex;          /* antes estaba en display:none */
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 2) Evitar que las tags se “coman” el espacio del botón */
+  .right-actions{
+    flex-wrap: wrap;               /* permite que el botón salte de línea si hace falta */
+    gap: 10px;
+  }
+
+  /* Opción A (recomendada): ocultar tags en móvil para dar aire */
+  .tags{ display: none; }
+  
   .logo-img{ width:32px; height:32px; }
   .brand-text{ font-size: 13px; max-width: 26vw; }
   .about{
