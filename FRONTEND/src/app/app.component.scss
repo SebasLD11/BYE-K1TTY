@@ -147,16 +147,26 @@
 /* Asegura que el overlay no bloquee el click con el véu */
 .entry-banner::after { pointer-events: none; }
 
-/* La imagen nunca se recorta: se contiene y se centra */
+/* La imagen ocupa casi toda la altura útil del viewport y se centra.
+   No se recorta el dibujo (object-fit: contain) */
 .entry-bg{
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  object-fit: contain;                    /* <- sin recortes */
-  object-position: center center;         /* centrada */
-  filter: brightness(1.12) contrast(1.03);/* un poco más luminosa */
+  position: absolute; inset: 0;
+  margin: auto;                     /* centra en ambos ejes */
+  height: calc(100dvh - var(--nav-h) - 24px); /* altura base */
+  width: auto;                      /* deja que el ancho se ajuste */
+  max-width: 96vw;                  /* no sobresalga lateralmente */
+  object-fit: contain;
+  object-position: center center;
+  filter: none;                     /* color original; si la quieres más viva, sube brightness */
+  background: #ffffff;              /* fondo detrás de zonas transparentes */
   z-index: 0;
-  /* opcional: color de fondo detrás de las “bandas” */
-  background: #ffffff;
+}
+
+/* Mejora en navegadores con svh real (iOS/Android modernos) */
+@supports (height: 100svh){
+  .entry-bg{
+    height: calc(100svh - var(--nav-h) - 24px);
+  }
 }
 
 /* Contenido: título centrado y botón anclado abajo */
@@ -166,7 +176,6 @@
   bottom: clamp(24px, 6vh, 72px);   /* margen inferior adaptable */
   display: flex;
   justify-content: center;
-  pointer-events: none;             /* evita que capture toda la capa */
 }
 
 .entry-banner .entry-cta{
@@ -693,6 +702,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     --bg-zoom: 170% auto;       /* ancho 170%, alto auto */
     --bg-pos-y: 45%;            /* baja un poco el encuadre */
   }
+  .entry-bg{
+    height: calc(100dvh - var(--nav-h) - 16px); /* un poco más alta en móvil */
+    max-width: 98vw;
+  }
+  @supports (height: 100svh){
+    .entry-bg{ height: calc(100svh - var(--nav-h) - 16px); }
+  }
+
   .entry-banner .inner{
     bottom: clamp(16px, 8vh, 48px);
   }
@@ -864,14 +881,15 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     --bg-zoom: 200% auto;       /* más zoom en pantallas muy estrechas */
     --bg-pos-y: 47%;            /* microajuste del encuadre */
   }
-  .entry-banner .entry-cta{
-    padding: 11px 14px;
-    border-radius: 12px;
-    font-size: 14px;
+  .entry-bg{
+    height: calc(100dvh - var(--nav-h) - 12px); /* usa aún más altura */
+    max-width: 98vw;
   }
-  .entry-banner .inner{
-    bottom: clamp(12px, 9vh, 40px);
+  @supports (height: 100svh){
+    .entry-bg{ height: calc(100svh - var(--nav-h) - 12px); }
   }
+
+  .entry-banner .inner{ bottom: clamp(12px, 9vh, 40px); }
   .entry-banner .entry-cta{
     padding: 11px 14px;
     border-radius: 12px;
