@@ -680,7 +680,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     width: auto;
     height: 100dvh;         /* llena la altura visible */
     max-width: 100vw;
-    object-fit: contain;     /* mantiene SIN recortes */
+    object-fit: cover;     /* mantiene SIN recortes */
     object-position: center;
   }
   @supports (height: 100svh){
@@ -862,6 +862,8 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .entry-bg{
     height: 100dvh;
     max-width: 100vw;
+    object-fit: cover;      /* NO recorta */
+    object-position: center;
   }
   @supports (height: 100svh){
     .entry-bg{ height: 100svh; }
