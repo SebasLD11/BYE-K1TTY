@@ -127,7 +127,17 @@
   min-height: 100dvh;                     /* navegadores modernos */
   min-height: 100svh;                     /* iOS 16+ */
   display: grid;
-  /* capa oscura muy suave para legibilidad (ahora más luminosa) */
+  /* estas dos variables controlan zoom y encuadre del fondo */
+  --bg-zoom: cover;          /* desktop: sin zoom extra */
+  --bg-pos-y: 50%;           /* centrado vertical */
+  background-position: center var(--bg-pos-y);
+  background-size: var(--bg-zoom);
+}
+/* Upgrade: si el navegador soporta svh, usa esto (override de la regla base) */
+@supports (height: 100svh){
+  .entry-banner{
+    min-height: calc(100svh - var(--nav-h));
+  }
 }
 /* ❌ sin overlay oscuro */
 .entry-banner::before{ content: none; }
@@ -172,12 +182,6 @@
 }
 .entry-banner .entry-cta:hover{ transform: translateY(-1px); }
 .entry-banner .entry-cta:active{ transform: translateY(0); }
-
-@supports (height: 100svh){
-  .entry-banner{
-    min-height: calc(100svh - var(--nav-h));
-  }
-}
 
 /* =========================
    SHOP: header + layout
@@ -681,6 +685,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 768px){ 
+  @supports (height: 100svh){
+    .entry-banner{ min-height: calc(100svh - var(--nav-h)); }
+  }
+  .entry-banner{
+    /* “zoom”: ampliamos el ancho al 170% del contenedor */
+    --bg-zoom: 170% auto;       /* ancho 170%, alto auto */
+    --bg-pos-y: 45%;            /* baja un poco el encuadre */
+  }
   .entry-banner .inner{
     bottom: clamp(16px, 8vh, 48px);
   }
@@ -848,6 +860,15 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 }
 
 @media (max-width: 390px){
+  .entry-banner{
+    --bg-zoom: 200% auto;       /* más zoom en pantallas muy estrechas */
+    --bg-pos-y: 47%;            /* microajuste del encuadre */
+  }
+  .entry-banner .entry-cta{
+    padding: 11px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
   .entry-banner .inner{
     bottom: clamp(12px, 9vh, 40px);
   }
