@@ -638,6 +638,51 @@ position: fixed;
 button[disabled]{ opacity:.5; cursor:not-allowed; }
 
 /* =========================
+   COLECCIONES (toggle por título)
+   ========================= */
+.collection{ margin: 14px 0 24px; }
+.collection + .collection{ margin-top: 24px; }
+
+.collection-head{
+  margin: 0 0 8px 0;
+  font-size: clamp(16px, 2.2vw, 20px);
+  font-weight: 900;
+}
+
+.collection-title{
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.08);
+  background: rgba(0,0,0,.04);
+  color: inherit; font-weight: 900; letter-spacing: .01em;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+.collection-title:hover{ background: rgba(0,0,0,.06); }
+.collection-title:active{ transform: translateY(1px); }
+.collection-title small{ font-weight: 700; opacity: .7; font-size: 12px; margin-left: 8px; }
+
+:host.dark .collection-title{
+  border-color: rgba(255,255,255,.1);
+  background: rgba(255,255,255,.04);
+}
+:host.dark .collection-title:hover{ background: rgba(255,255,255,.06); }
+
+/* Indicador visual (chevron) según aria-expanded */
+.collection-title::after{
+  content: "▾";
+  margin-left: 8px;
+  transition: transform .15s ease;
+}
+.collection-title[aria-expanded="false"]::after{ transform: rotate(-90deg); }
+
+/* Separación del grid cuando está abierto */
+.collection .grid{ margin-top: 8px; }
+
+/* =========================
    Responsive
    ========================= */
 @media (max-width: 1200px){
@@ -852,6 +897,29 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     min-width: 44px;       /* mínimo recomendado de tap */
     padding: 10px 12px;
   }
+
+  .collection{ margin: 12px 0 20px; }
+
+  .collection-title{
+    min-height: 44px;                 /* área táctil recomendada */
+    padding: 10px 12px;               /* un poco más de aire */
+    font-size: 16px;                  /* legible en móvil */
+    display: flex; align-items: center;
+    justify-content: flex-start;      /* texto + contador juntos */
+    gap: 8px;                         /* separación texto/contador */
+    white-space: normal;              /* permite salto de línea */
+    word-break: break-word;           /* evita desbordes largos */
+  }
+  .collection-title::after{
+    margin-left: auto;                /* chevron fijo a la derecha */
+  }
+  .collection-title small{
+    font-size: 12px; opacity: .7;
+  }
+
+  /* el grid dentro de la colección ya se centra con tus reglas;
+     solo afinamos el gap a un pelín menor si quieres */
+  .collection .grid{ gap: 16px; margin-top: 8px; }
 }
 
 @media (max-width: 390px){
@@ -931,4 +999,15 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     padding: 9px 10px;
     border-radius: 9px;
   }
+
+  .collection{ margin: 10px 0 16px; }
+
+  .collection-title{
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+  /* si vas muy justo de espacio, oculta el contador */
+  /* .collection-title small{ display:none; } */
+  .collection .grid{ gap: 14px; }
 }

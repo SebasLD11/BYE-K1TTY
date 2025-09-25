@@ -67,6 +67,15 @@ export class AppComponent {
         });
     });
 
+    // Estado de colecciones colapsadas (por título)
+    collapsed = signal<Set<string>>(new Set());
+    toggleCollection(title: string) {
+        const s = new Set(this.collapsed());
+        s.has(title) ? s.delete(title) : s.add(title);
+        this.collapsed.set(s);
+    }
+    isCollapsed(title: string) { return this.collapsed().has(title); }
+
     constructor(){
         this.productSvc.list().subscribe(ps => {
             const normalized = ps.map(p => ({ ...p, images: (p.images ?? []).map(src => this.normalizeAsset(src)) }));
@@ -107,6 +116,19 @@ export class AppComponent {
         });
     }
 
+    // Grupos por colección con fallback
+    readonly groups = computed(() => {
+    const map = new Map<string, Product[]>();
+    for (const p of this.filteredProducts()) {
+        const key = (p.collectionTitle || 'Sin colección').trim() || 'Sin colección';
+        if (!map.has(key)) map.set(key, []);
+        map.get(key)!.push(p);
+    }
+    // Ordena alfabético por título de colección (opcional)
+    return Array.from(map.entries())
+        .sort((a,b) => a[0].localeCompare(b[0]))
+        .map(([title, items]) => ({ title, items }));
+    });
     private normalizeAsset(src: string): string {
         if (!src) return this.FALLBACK_IMG;
         if (/^https?:\/\//i.test(src)) return src;      // ya es absoluta

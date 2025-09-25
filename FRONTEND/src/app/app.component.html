@@ -118,40 +118,51 @@
       </aside>
       <!-- CATÁLOGO centrado -->
       <section class="catalog">
-        <div class="grid">
-          <article class="card" *ngFor="let p of filteredProducts(); trackBy: trackById">
-            <div class="media" (click)="openProduct(p)">
-              <img
-                [src]="p.images?.length ? p.images[0] : FALLBACK_IMG"
-                [alt]="p.name"
-                (error)="onImgErr($event)" />
-              <div class="thumbs">
+        <div class="collection" *ngFor="let g of groups()">
+          <h3 class="collection-head">
+            <button type="button"
+                    class="collection-title"
+                    (click)="toggleCollection(g.title)"
+                    [attr.aria-expanded]="!isCollapsed(g.title)"
+                    [attr.aria-controls]="'col-'+g.title">
+              {{ g.title }} <small>({{ g.items.length }})</small>
+            </button>
+          </h3>
+          <div class="grid"
+            [id]="'col-'+g.title"
+            *ngIf="!isCollapsed(g.title)">
+            <article class="card" *ngFor="let p of g.items; trackBy: trackById">
+              <div class="media" (click)="openProduct(p)">
                 <img
-                  *ngFor="let src of p.images"
-                  [src]="src"
-                  alt="thumb"
+                  [src]="p.images?.length ? p.images[0] : FALLBACK_IMG"
+                  [alt]="p.name"
                   (error)="onImgErr($event)" />
+                <div class="thumbs">
+                  <img *ngFor="let src of p.images"
+                    [src]="src"
+                    alt="thumb"
+                    (error)="onImgErr($event)" />
+                </div>
               </div>
-            </div>
-            <div class="info">
-              <div>
-                <h3>{{ p.name }}</h3>
-                <p class="price">{{ p.price | currency:'EUR' }}</p>
+              <div class="info">
+                <div>
+                  <h3>{{ p.name }}</h3>
+                  <p class="price">{{ p.price | currency:'EUR' }}</p>
+                </div>
+                <div class="right">
+                  <span class="tag">{{ p.tag }}</span>
+                  <button class="add"
+                    (click)="p.sizes?.length > 1 ? openProduct(p) : cartSvc.add(p, null)">
+                    + Añadir
+                  </button>
+                </div>
               </div>
-              <div class="right">
-                <span class="tag">{{ p.tag }}</span>
-                <button class="add"
-                  (click)="p.sizes?.length > 1 ? openProduct(p) : cartSvc.add(p, null)">
-                  + Añadir
-                </button>
-              </div>
-            </div>
-          </article>
+            </article>
+          </div>
         </div>
       </section>
     </div>
-  </section>
-  
+  </section>    
   <!-- ABOUT -->
   <section *ngIf="tab()==='about'" class="about">
     <!-- Hero de bienvenida (ahora en About) -->

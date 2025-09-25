@@ -9,7 +9,9 @@ const serialize = p => ({
   price: p.price,
   tag: p.tag,
   images: (Array.isArray(p.images)? p.images:[]).map(abs),
-  sizes: (Array.isArray(p.sizes) ? p.sizes : []).map(String) // ✅ tallas = texto
+  sizes: (Array.isArray(p.sizes) ? p.sizes : []).map(String), // ✅ tallas = texto
+  // 👇 incluir en respuesta
+  collectionTitle: p.collectionTitle || 'Sin colección'
 });
 
 exports.list = async (_req, res, next) => {
