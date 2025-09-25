@@ -645,7 +645,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
 
 .collection-head{
   margin: 0 0 8px 0;
-  font-size: clamp(16px, 2.2vw, 20px);
+  font-size: clamp(16px, 2.2vw, 28px);
   font-weight: 900;
 }
 
@@ -657,7 +657,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   border-radius: 12px;
   border: 1px solid rgba(0,0,0,.08);
   background: rgba(0,0,0,.04);
-  color: inherit; font-weight: 900; letter-spacing: .01em;
+  color: #facc15; font-weight: 900; letter-spacing: .01em;
   cursor: pointer;
   transition: background .12s ease, border-color .12s ease, transform .06s ease;
 }
@@ -1005,7 +1005,7 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .collection-title{
     padding: 9px 10px;
     border-radius: 10px;
-    font-size: 15px;
+    font-size: 20px;
   }
   /* si vas muy justo de espacio, oculta el contador */
   /* .collection-title small{ display:none; } */
