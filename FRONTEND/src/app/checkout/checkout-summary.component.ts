@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CartService } from '../services/cart.service';
 import { CheckoutService, ShippingSel } from '../services/checkout.service';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -16,6 +17,8 @@ export class CheckoutSummaryComponent {
     api = inject(CheckoutService);
 
     private fb = inject(NonNullableFormBuilder);
+    private router = inject(Router);
+
 
     form = this.fb.group({
         fullName: ['', [Validators.required, Validators.minLength(2)]],
@@ -71,5 +74,8 @@ export class CheckoutSummaryComponent {
             },
             complete: () => this.loading.set(false)
         });
+    }
+    backToShop(){
+        this.router.navigate(['/'], { fragment: 'shopTop' });
     }
 }

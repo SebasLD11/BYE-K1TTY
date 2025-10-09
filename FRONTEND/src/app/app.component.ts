@@ -1,6 +1,7 @@
 import { Component, HostBinding, HostListener, inject, signal, computed, effect  } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd  } from '@angular/router';
+import { filter } from 'rxjs/operators'; // 👈
 import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
@@ -19,6 +20,8 @@ export class AppComponent {
     cartSvc = inject(CartService);
     checkout = inject(CheckoutService);
     router = inject(Router);   // 👈 añade esta línea
+    /** ¿Estamos en /checkout? (reactivo) */
+    isCheckout = signal(false);
     // Guarda el último foco para devolverlo al cerrar (opcional)
     private _lastFocus: HTMLElement | null = null;
 
@@ -79,6 +82,10 @@ export class AppComponent {
     isCollapsed(title: string) { return this.collapsed().has(title); }
 
     constructor(){
+        // Inicializa y mantén sincronizado el flag de ruta
+        this.isCheckout.set(this.router.url.startsWith('/checkout'));
+        this.router.events.pipe(filter(e => e instanceof NavigationEnd))
+        .subscribe(() => this.isCheckout.set(this.router.url.startsWith('/checkout')));
         this.productSvc.list().subscribe(ps => {
             const normalized = ps.map(p => ({ ...p, images: (p.images ?? []).map(src => this.normalizeAsset(src)) }));
             this.products.set(normalized);
@@ -198,8 +205,8 @@ export class AppComponent {
     checkoutNow(){
         const items = this.cartSvc.toCheckoutItems();
         if(!items.length) return;
-        this.cartOpen = false;                 // cierra el drawer
-        this.router.navigate(['/checkout']);   // navega a la página
+        this.cartOpen = false;              // cierra el drawer
+        this.router.navigate(['/checkout']); // navega
     }
 
     enterShop(){
