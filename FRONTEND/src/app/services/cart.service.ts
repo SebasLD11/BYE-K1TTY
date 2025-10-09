@@ -1,38 +1,48 @@
 // src/app/services/cart.service.ts
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs'; // 👈 map para itemCount$
 import { Product } from '../models/product.model';
 
 export interface CartItem {
-  key: string;                 // id__SIZE (o id__ONE si no hay talla)
-  id: string;
-  name: string;
-  price: number;
-  qty: number;
-  img?: string;
-  size?: string | null;        // null si el producto no tiene tallas
+  key: string; id: string; name: string; price: number; qty: number;
+  img?: string; size?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
   private key = 'bk-cart';
-  // 👇 NADA de @Inject aquí. Usamos la función inject():
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
 
   private _items$ = new BehaviorSubject<CartItem[]>([]);
   items$ = this._items$.asObservable();
 
+  /** (opcional) total de unidades para la badgeta del carrito */
+  itemCount$ = this.items$.pipe(map(items => items.reduce((s, i) => s + i.qty, 0)));
+
   constructor() {
-    const raw = this.isBrowser ? JSON.parse(localStorage.getItem(this.key) ?? '[]') : [];
-    const initial = this.normalizeLegacy(raw);
-    this._items$.next(initial);
-    // opcional: guarda normalizado para “migrar” el storage antiguo
-    this.save(initial);
+    const initial = this.safeLoad();
+    this._items$.next(this.normalizeLegacy(initial));
+    this.save(this._items$.value);
+
+    // 👇 opcional: sincroniza entre pestañas
+    if (this.isBrowser) {
+      window.addEventListener('storage', (e) => {
+        if (e.key === this.key && e.newValue) {
+          try { this._items$.next(JSON.parse(e.newValue)); } catch {}
+        }
+      });
+    }
   }
 
-  /** Convierte formato viejo (sin key/size) -> nuevo, y asegura tipos */
+  /** lee localStorage sin romper la app si hay JSON inválido */
+  private safeLoad(): any[] {
+    if (!this.isBrowser) return [];
+    try { return JSON.parse(localStorage.getItem(this.key) ?? '[]'); }
+    catch { return []; }
+  }
+
   private normalizeLegacy(items: any[]): CartItem[] {
     if (!Array.isArray(items)) return [];
     return items.map((i: any) => {
@@ -41,7 +51,8 @@ export class CartService {
       const price= Number(i?.price ?? 0);
       const qty  = Math.max(1, Number(i?.qty ?? 1));
       const img  = i?.img ? String(i.img) : undefined;
-      const size = typeof i?.size === 'string' ? i.size : null;
+      const sizeRaw = typeof i?.size === 'string' ? i.size : null;
+      const size = sizeRaw ? String(sizeRaw).trim() : null; // 👈 normaliza talla
       const key  = String(i?.key ?? `${id}__${size ?? 'ONE'}`);
       return { key, id, name, price, qty, img, size };
     }).filter(i => i.id);
@@ -52,28 +63,28 @@ export class CartService {
     this._items$.next(items);
   }
 
-  /** Añadir con talla opcional (por defecto null) */
   add(p: Product, size: string | null = null, qty = 1) {
-    const key = `${p._id}__${size ?? 'ONE'}`;
+    const normSize = size ? size.trim() : null;            // 👈 normaliza talla
+    const key = `${p._id}__${normSize ?? 'ONE'}`;
     const items = [...this._items$.value];
     const idx = items.findIndex(x => x.key === key);
 
     if (idx >= 0) {
-      items[idx] = { ...items[idx], qty: items[idx].qty + qty };
+      items[idx] = { ...items[idx], qty: items[idx].qty + Math.max(1, qty) };
     } else {
       items.push({
         key,
         id: String(p._id),
         name: p.name,
-        price: p.price,
+        price: Number(p.price) || 0,
         qty: Math.max(1, qty),
         img: p.images?.[0],
-        size
+        size: normSize
       });
     }
     this.save(items);
   }
-  /** Operaciones ahora por key (id+talla) */
+
   inc(key: string) {
     this.save(this._items$.value.map(i => i.key === key ? { ...i, qty: i.qty + 1 } : i));
   }
@@ -84,17 +95,27 @@ export class CartService {
       )
     );
   }
+
+  /** 👇 nuevo: setea cantidad exacta (para inputs numéricos) */
+  setQty(key: string, qty: number) {
+    const q = Math.max(1, Math.floor(Number(qty) || 1));
+    this.save(this._items$.value.map(i => i.key === key ? { ...i, qty: q } : i));
+  }
+
   remove(key: string) {
     this.save(this._items$.value.filter(i => i.key !== key));
   }
-
   clear() { this.save([]); }
 
-  total() { return this._items$.value.reduce((s, i) => s + i.price * i.qty, 0); }
+  /** total “bonito” para UI (redondeado a 2 decimales) */
+  total() {
+    const n = this._items$.value.reduce((s, i) => s + i.price * i.qty, 0);
+    return Math.round(n * 100) / 100;
+  }
 
   snapshot() { return this._items$.value; }
 
-  /** Útil para el checkout: id, qty, size */
+  /** payload para el checkout (shape que espera la API) */
   toCheckoutItems() {
     return this._items$.value.map(i => ({ id: i.id, qty: i.qty, size: i.size ?? null }));
   }

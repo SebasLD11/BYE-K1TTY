@@ -1,5 +1,6 @@
 import { Component, HostBinding, HostListener, inject, signal, computed, effect  } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
@@ -16,7 +17,8 @@ styleUrls: ['./app.component.scss']
 export class AppComponent {
     private productSvc = inject(ProductService);
     cartSvc = inject(CartService);
-    private checkout = inject(CheckoutService);
+    checkout = inject(CheckoutService);
+    router = inject(Router);   // 👈 añade esta línea
     // Guarda el último foco para devolverlo al cerrar (opcional)
     private _lastFocus: HTMLElement | null = null;
 
@@ -194,9 +196,9 @@ export class AppComponent {
     }
 
     checkoutNow(){
-        const items = this.cartSvc.toCheckoutItems(); // [{id, qty, size}]
+        const items = this.cartSvc.toCheckoutItems();
         if(!items.length) return;
-        this.checkout.createSession(items).subscribe(({url}) => window.location.href = url);
+        this.router.navigateByUrl('/checkout');
     }
 
     enterShop(){

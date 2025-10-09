@@ -5,7 +5,8 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const compression = require('compression');
 const cookieParser = require('cookie-parser');
-
+const path = require('path');
+const fs = require('fs');
 const { connectDB } = require('./src/db');
 const corsMw = require('./src/middleware/cors');
 const errorMw = require('./src/middleware/error');
@@ -28,6 +29,11 @@ app.use(morgan('tiny'));
 
 // Body parser (si algún día usas webhook de Stripe, móntalo ANTES de este json)
 app.use(express.json({ limit: '1mb' }));
+
+//Recibo
+const RECEIPTS_DIR = process.env.RECEIPTS_DIR || path.join(__dirname, 'uploads/receipts');
+fs.mkdirSync(RECEIPTS_DIR, { recursive: true });
+app.use('/receipts', express.static(RECEIPTS_DIR, { index:false, extensions:['pdf'] }));
 
 // Routes
 app.get('/health', (_req, res) => res.status(200).json({ ok: true }));

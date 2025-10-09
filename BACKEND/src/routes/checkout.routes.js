@@ -1,10 +1,8 @@
 const router = require('express').Router();
 const ctrl = require('../controllers/checkout.controller');
 
-// Checkout
-router.post('/stripe/checkout', ctrl.createCheckout);
+router.post('/summary', ctrl.summary);
 
-// Confirmación SIN webhook (mientras pruebas)
-router.get('/stripe/confirm', ctrl.confirm);
+router.post('/finalize', ctrl.finalize);
 
 module.exports = router;

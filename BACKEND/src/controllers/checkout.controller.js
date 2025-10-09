@@ -1,78 +1,99 @@
+const { z } = require('zod');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const StripeSdk = require('stripe');
-const stripe = new StripeSdk(process.env.STRIPE_SECRET_KEY);
+const { quoteOptions } = require('../utils/shipping');
+const path = require('path');
+const { generateReceiptPDF } = require('../utils/pdf');
 
-// POST /api/pay/stripe/checkout
-exports.createCheckout = async (req, res, next) => {
+const itemSchema = z.object({ id: z.string(), qty: z.number().min(1), size: z.string().min(1).nullable().optional() });
+const buyerSchema = z.object({
+  fullName: z.string().min(2), email: z.string().email(), phone: z.string().min(6),
+  line1: z.string().min(3), line2: z.string().optional().nullable(),
+  city: z.string().min(2), province: z.string().min(2), postalCode: z.string().min(3),
+  country: z.string().length(2).default('ES'),
+});
+const summarySchema = z.object({
+  items: z.array(itemSchema).min(1), buyer: buyerSchema,
+  discountCode: z.string().optional().nullable(),
+  shipping: z.object({ carrier:z.string(), service:z.string(), zone:z.string(), cost:z.number().nonnegative() }).optional(),
+});
+
+function applyDiscount(subtotal, code) {
+  const normalized = String(code||'').trim().toUpperCase();
+  if (!normalized) return { discountCode:null, discountAmount:0 };
+  if (['BK5','BYE5','DISCOUNT5'].includes(normalized)) return { discountCode:normalized, discountAmount:+(subtotal*0.05).toFixed(2) };
+  return { discountCode:normalized, discountAmount:0 };
+}
+
+async function buildSummary({ items, buyer, discountCode, shipping }) {
+  const ids = items.map(i => i.id);
+  const dbProducts = await Product.find({ _id: { $in: ids } }).lean();
+  const lines = items.map(i => {
+    const p = dbProducts.find(d => String(d._id) === String(i.id));
+    if (!p) throw Object.assign(new Error('product_not_found'), { status:400 });
+    if (Array.isArray(p.sizes) && p.sizes.length && (!i.size || !p.sizes.includes(String(i.size)))) {
+      throw Object.assign(new Error('invalid_size'), { status:400 });
+    }
+    return { productId:p._id, name:p.name, price:Number(p.price), qty:Math.max(1,Number(i.qty||1)), size:i.size??null, img:p.images?.[0]||null };
+  });
+  const subtotal = lines.reduce((s,l)=>s+l.price*l.qty,0);
+  const { discountCode:disc, discountAmount } = applyDiscount(subtotal, discountCode);
+  const vatRate = Number(process.env.DEFAULT_VAT_RATE||0.21);
+  const vatAmount = +((subtotal - discountAmount) * vatRate).toFixed(2);
+  let shippingOptions = []; let shippingSel = shipping || null;
+  if (!shippingSel) shippingOptions = quoteOptions(buyer);
+  const shippingCost = shippingSel?.cost || 0;
+  const total = +((subtotal - discountAmount + vatAmount + shippingCost)).toFixed(2);
+  return { items:lines, subtotal, discountCode:disc, discountAmount, vatRate, vatAmount, shipping:shippingSel, buyer, total, shippingOptions };
+}
+
+exports.summary = async (req, res, next) => {
   try {
-    const items = Array.isArray(req.body?.items) ? req.body.items : [];
-    if (!items.length) return res.status(400).json({ error: 'no_items' });
-
-    const ids = items.map(i => i.id);
-    const dbProducts = await Product.find({ _id: { $in: ids } }).lean();
-
-    const line_items = items.map(i => {
-      const p = dbProducts.find(x => String(x._id) === String(i.id));
-      if (!p) throw Object.assign(new Error('product_not_found'), { status: 400 });
-      // valida talla si el producto tiene tallas
-      if (Array.isArray(p.sizes) && p.sizes.length) {
-        if (!i.size || !p.sizes.includes(String(i.size))) {
-          throw Object.assign(new Error('invalid_size'), { status: 400 });
-        }
-      }
-
-      const nameWithSize = p.sizes?.length ? `${p.name} — Talla ${i.size}` : p.name;
-      return {
-        price_data: {
-          currency: 'eur',
-          product_data: { name: nameWithSize, images: p.images?.length ? [p.images[0]] : [] },
-          unit_amount: Math.round(p.price * 100),
-        },
-        quantity: Math.max(1, Number(i.qty) || 1),
-      };
-    });
-
-    const order = await Order.create({
-      items: dbProducts.map(p => {
-        const reqItem = items.find(i => String(i.id) === String(p._id));
-        const q = reqItem?.qty || 1;
-        return { productId: p._id, name: p.name, price: p.price, qty: q, size: reqItem?.size || null };
-      }),
-      total: dbProducts.reduce((s, p) => s + p.price * (items.find(i => String(i.id) === String(p._id))?.qty || 1), 0),
-      status: 'pending',
-    });
-
-    const FRONT = (process.env.FRONT_URL || 'http://localhost:4200').replace(/\/$/, '');
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items,
-      success_url: `${FRONT}/?success=1&session_id={CHECKOUT_SESSION_ID}`, // 👈 importante
-      cancel_url: `${FRONT}/?cancel=1`,
-      metadata: { orderId: String(order._id) },
-    });
-
-    await Order.findByIdAndUpdate(order._id, { stripeSessionId: session.id });
-    res.status(200).json({ url: session.url });
+    const input = summarySchema.omit({ shipping:true }).parse(req.body);
+    const s = await buildSummary(input);
+    const order = await Order.create({ ...s, status:'review' });
+    return res.json({ orderId: order._id, ...s, shippingOptions: s.shippingOptions });
   } catch (e) { next(e); }
 };
-// GET /api/pay/stripe/confirm?session_id=cs_test_...
-exports.confirm = async (req, res, next) => {
+
+// === NUEVO finalize SIN SMTP NI TOKEN WA ===
+exports.finalize = async (req, res, next) => {
   try {
-    const { session_id } = req.query;
-    if (!session_id) return res.status(400).json({ error: 'missing_session_id' });
+    const input = summarySchema.parse(req.body);
+    const s = await buildSummary(input);
 
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    // crea/actualiza order
+    const order = req.body.orderId
+      ? await Order.findByIdAndUpdate(req.body.orderId, { ...s, status:'awaiting_payment' }, { new:true })
+      : await Order.create({ ...s, status:'awaiting_payment' });
 
-    if (session.payment_status === 'paid') {
-      await Order.findOneAndUpdate(
-        { stripeSessionId: session.id },
-        { status: 'paid' }
-      );
-      return res.json({ ok: true, paid: true });
-    }
+    // genera PDF
+    const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
+    const { filename } = await generateReceiptPDF(order.toObject(), { outDir, brandLogoUrl: process.env.BRAND_LOGO_URL });
 
-    res.json({ ok: true, paid: false, status: session.payment_status });
+    // BASE_URL no existe: derivamos del request (trust proxy ya está en server.js)
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/receipts/${filename}`;
+    await Order.findByIdAndUpdate(order._id, { receiptPath: filename });
+
+    // enlaces de “compartir” sin credenciales
+    const subject = 'Tu recibo — BYE K1TTY';
+    const body = `¡Gracias por tu compra en BYE K1TTY!
+    Total: €${s.total.toFixed(2)}
+    Recibo PDF: ${receiptUrl}
+    Cupón -5%: BK5`;
+
+    const mailto = `mailto:${encodeURIComponent(order.buyer.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    const vendor = (process.env.VENDOR_WHATSAPP_NUMBER || '').replace(/^\+/, '');
+    const wa = vendor
+      ? `https://wa.me/${vendor}?text=${encodeURIComponent(`Nuevo pedido Bizum:
+      Cliente: ${order.buyer.fullName} (${order.buyer.phone})
+      Total: €${order.total.toFixed(2)}
+      Recibo: ${receiptUrl}`)}`
+      : null;
+
+    // devolvemos receipt + enlaces para que el front los use
+    return res.json({ ok:true, orderId: order._id, receiptUrl, share: { mailto, wa } });
   } catch (e) { next(e); }
 };
