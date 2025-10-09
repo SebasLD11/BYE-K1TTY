@@ -20,6 +20,7 @@ app.set('trust proxy', 1);
 
 // Core middlewares
 app.use(corsMw);
+app.options('*', corsMw.options || corsMw); // <- IMPORTANTE: preflight universal
 app.use(helmet());
 app.use(compression());
 app.use(cookieParser());
