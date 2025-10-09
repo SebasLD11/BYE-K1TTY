@@ -28,9 +28,7 @@
         aria-controls="drawerCart"
         [attr.aria-expanded]="cartOpen ? 'true' : 'false'">
         Carrito
-        <span class="badge" *ngIf="(cartSvc.items$|async)?.length">
-          {{ (cartSvc.items$|async)?.length }}
-        </span>
+        <span class="badge" *ngIf="(cartSvc.itemCount$ | async) as count">{{ count }}</span>
       </button>
     </div>
   </div>
@@ -362,7 +360,7 @@
   <footer>
     <div class="row">
       <span>Total</span>
-      <strong>{{ cartSvc.total() | currency:'EUR' }}</strong>
+      <strong>{{ cartSvc.total$ | currency:'EUR' }}</strong>
     </div>
     <div class="row gap">
       <button class="clear" (click)="cartSvc.clear()">Vaciar</button>

@@ -20,7 +20,9 @@ export class CartService {
 
   /** (opcional) total de unidades para la badgeta del carrito */
   itemCount$ = this.items$.pipe(map(items => items.reduce((s, i) => s + i.qty, 0)));
-
+  total$ = this.items$.pipe(
+    map(items => Math.round(items.reduce((s,i)=> s + i.price * i.qty, 0) * 100) / 100)
+  );
   constructor() {
     const initial = this.safeLoad();
     this._items$.next(this.normalizeLegacy(initial));
