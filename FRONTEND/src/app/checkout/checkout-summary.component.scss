@@ -2,6 +2,7 @@
 
 .checkout{
   padding: 16px 0 24px;
+  overflow: hidden;
 }
 
 .checkout-header{
@@ -60,22 +61,32 @@
 }
 
 /* ====== Form ====== */
+.form-card, .summary-card { min-width: 0; } /* permite encoger dentro del grid */
+.form-grid > * { min-width: 0; } /* evita que el contenido fuerce el ancho */
+
 .form-grid{
   display:grid; gap:10px;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* 2 cols fluidas */
 }
 .form-grid .col-1{ grid-column: 1 / -1; }
 
 .field{
   display:grid; gap:6px;
+  min-width: 0;  /* clave para inputs largos */
 }
 .field label{
   font-weight:700; font-size:12px; opacity:.85;
 }
 .field input, .field select, .field textarea{
-  width:100%; padding:10px 12px; border-radius:12px;
-  border:1px solid rgba(0,0,0,.1);
-  background:transparent; color:inherit;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,.1);
+  background: transparent; color: inherit;
 }
 :host-context(.dark) .field input,
 :host-context(.dark) .field select,
@@ -154,8 +165,7 @@
 
   /* inputs un poco más cómodos en tablet */
   .form-grid{
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr; gap: 10px;
   }
 
   /* acciones a lo ancho */
@@ -189,6 +199,7 @@
 
   /* Tarjetas más compactas */
   .card .section{ padding: 12px; gap: 10px; }
+  .form-grid{ grid-template-columns: 1fr; }
 
   /* Lista de artículos */
   .item{
@@ -217,6 +228,10 @@
 @media (max-width: 390px){
   .checkout{ padding: 8px 0 16px; }
   .back-btn{ padding:7px 10px; border-radius:10px; font-size: 13px; }
+
+  .field input, .field select, .field textarea{
+    min-height: 38px; border-radius: 10px; padding: 9px 10px;
+  }
 
   .checkout-header h2{ font-size: 22px; }
   .checkout-sub{ font-size: 12px; }

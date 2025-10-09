@@ -41,13 +41,28 @@ export class CheckoutSummaryComponent {
 
     items = computed(() => this.cart.snapshot().map(i => ({ id:i.id, qty:i.qty, size: i.size ?? null })));
 
+    /** Total correcto: precios YA tienen IVA → total = (subtotal - descuento) + envío */
+    readonly grandTotal = computed(() => {
+        const s = this.summary();
+        if (!s) return 0;
+        const ship = this.shipping();
+        const shipCost = ship?.cost ?? 0;
+        return +(s.subtotal - s.discountAmount + shipCost).toFixed(2);
+    });
+
     submitSummary() {
         if (!this.items().length || this.form.invalid) return;
         this.loading.set(true);
         const buyer = this.form.getRawValue();
+
         this.api.summary({ items: this.items(), buyer, discountCode: buyer.discountCode || null })
         .subscribe({
-            next: res => { this.orderId.set(res.orderId); this.shippingOptions.set(res.shippingOptions || []); this.summary.set(res); },
+            next: res => {
+            this.orderId.set(res.orderId);
+            this.summary.set(res);
+            this.shippingOptions.set(res.shippingOptions || []);
+            if (res.shipping) this.shipping.set(res.shipping); // 👈 autoselección si el backend ya decide
+            },
             complete: () => this.loading.set(false)
         });
     }

@@ -28,23 +28,48 @@ function applyDiscount(subtotal, code) {
 async function buildSummary({ items, buyer, discountCode, shipping }) {
   const ids = items.map(i => i.id);
   const dbProducts = await Product.find({ _id: { $in: ids } }).lean();
+
   const lines = items.map(i => {
     const p = dbProducts.find(d => String(d._id) === String(i.id));
     if (!p) throw Object.assign(new Error('product_not_found'), { status:400 });
     if (Array.isArray(p.sizes) && p.sizes.length && (!i.size || !p.sizes.includes(String(i.size)))) {
       throw Object.assign(new Error('invalid_size'), { status:400 });
     }
-    return { productId:p._id, name:p.name, price:Number(p.price), qty:Math.max(1,Number(i.qty||1)), size:i.size??null, img:p.images?.[0]||null };
+    return {
+      productId: p._id, name: p.name, price: Number(p.price),
+      qty: Math.max(1, Number(i.qty||1)), size: i.size ?? null, img: p.images?.[0] || null
+    };
   });
-  const subtotal = lines.reduce((s,l)=>s+l.price*l.qty,0);
+
+  const subtotal = lines.reduce((s,l)=>s + l.price * l.qty, 0);        // precios YA con IVA
   const { discountCode:disc, discountAmount } = applyDiscount(subtotal, discountCode);
-  const vatRate = Number(process.env.DEFAULT_VAT_RATE||0.21);
-  const vatAmount = +((subtotal - discountAmount) * vatRate).toFixed(2);
-  let shippingOptions = []; let shippingSel = shipping || null;
-  if (!shippingSel) shippingOptions = quoteOptions(buyer);
+
+  const vatRate = Number(process.env.DEFAULT_VAT_RATE || 0.21);
+  const baseGross = +(subtotal - discountAmount).toFixed(2);           // bruto con IVA
+  // IVA “incluido”: parte del bruto que es IVA, SOLO informativo
+  const vatAmount = +((baseGross) - (baseGross / (1 + vatRate))).toFixed(2);
+
+  // Envío gratis a partir de 100€ (configurable por env, por defecto 100)
+  const FREE_SHIPPING = Number(process.env.FREE_SHIPPING_THRESHOLD || 100);
+  let shippingOptions = [];
+  let shippingSel = shipping || null;
+
+  if (!shippingSel) {
+    shippingOptions = quoteOptions(buyer);
+  }
+  if (baseGross >= FREE_SHIPPING) {
+    shippingOptions = (shippingOptions || []).map(o => ({ ...o, cost: 0 }));
+    if (shippingSel) shippingSel = { ...shippingSel, cost: 0 };
+  }
+
   const shippingCost = shippingSel?.cost || 0;
-  const total = +((subtotal - discountAmount + vatAmount + shippingCost)).toFixed(2);
-  return { items:lines, subtotal, discountCode:disc, discountAmount, vatRate, vatAmount, shipping:shippingSel, buyer, total, shippingOptions };
+  // TOTAL: como los precios ya incluyen IVA, NO sumamos IVA otra vez
+  const total = +(baseGross + shippingCost).toFixed(2);
+
+  return {
+    items: lines, subtotal, discountCode: disc, discountAmount,
+    vatRate, vatAmount, shipping: shippingSel, buyer, total, shippingOptions
+  };
 }
 
 exports.summary = async (req, res, next) => {

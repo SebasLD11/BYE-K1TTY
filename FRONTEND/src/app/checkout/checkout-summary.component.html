@@ -50,7 +50,7 @@
             </div>
             <div class="field col-1">
               <label for="discountCode">Cupón (opcional)</label>
-              <input id="discountCode" formControlName="discountCode" placeholder="BK5">
+              <input id="discountCode" formControlName="discountCode" placeholder="Introduce código de descuento">
             </div>
           </div>
 
@@ -62,7 +62,12 @@
       </div>
 
       <div class="section" *ngIf="shippingOptions().length">
-        <h3 class="form-title">Envío</h3>
+        <h3 class="form-title">
+          Envío
+          <small *ngIf="summary() && (summary()!.subtotal - summary()!.discountAmount) >= 100">
+            — ¡Gratis a partir de 100€!
+          </small>
+        </h3>
         <div class="ship-list">
           <label class="radio" *ngFor="let opt of shippingOptions()" [class.active]="shipping()?.carrier===opt.carrier && shipping()?.service===opt.service">
             <span class="left">
@@ -102,10 +107,11 @@
       <div class="section totals">
         <div class="row"><span>Subtotal</span><span>{{ s.subtotal | currency:'EUR' }}</span></div>
         <div class="row" *ngIf="s.discountAmount>0"><span>Descuento</span><span>-{{ s.discountAmount | currency:'EUR' }}</span></div>
-        <div class="row"><span>IVA</span><span>{{ s.vatAmount | currency:'EUR' }}</span></div>
+        <div class="row"><span>IVA (incl.)</span><span>{{ summary()?.vatAmount | currency:'EUR' }}</span></div>
         <div class="row" *ngIf="shipping()"><span>Envío</span><span>{{ shipping()?.cost | currency:'EUR' }}</span></div>
-        <div class="row grand"><span>Total</span>
-          <span>{{ (s.subtotal - s.discountAmount + s.vatAmount + (shipping()?.cost || 0)) | currency:'EUR' }}</span>
+        <div class="row grand">
+          <span>Total</span>
+          <span>{{ grandTotal() | currency:'EUR' }}</span>
         </div>
       </div>
     </aside>
