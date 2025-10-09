@@ -342,10 +342,10 @@
         </p>
         <p class="muted">{{ it.price | currency:'EUR' }}</p>
         <div class="qty">
-          <button (click)="cartSvc.dec(it.key)">-</button>
-          <span>{{ it.qty }}</span>
-          <button (click)="cartSvc.inc(it.key)">+</button>
-          <button class="muted" (click)="cartSvc.remove(it.key)">Eliminar</button>
+          <button class="chip" (click)="cartSvc.dec(it.key)" aria-label="Disminuir">−</button>
+          <span class="qty-num">{{ it.qty }}</span>
+          <button class="chip" (click)="cartSvc.inc(it.key)" aria-label="Aumentar">+</button>
+          <button class="clear sm" (click)="cartSvc.remove(it.key)">Eliminar</button>
         </div>
       </div>
     </div>
@@ -358,8 +358,10 @@
       <strong>{{ cartSvc.total() | currency:'EUR' }}</strong>
     </div>
     <div class="row gap">
-      <button (click)="cartSvc.clear()">Vaciar</button>
-      <button [disabled]="!(cartSvc.items$|async)?.length" class="cta" (click)="checkoutNow()">Checkout</button>
+      <button class="clear" (click)="cartSvc.clear()">Vaciar</button>
+      <button class="apply" [disabled]="!(cartSvc.items$|async)?.length" (click)="checkoutNow()">Checkout</button>
     </div>
   </footer>
 </div>
+<router-outlet></router-outlet>
+

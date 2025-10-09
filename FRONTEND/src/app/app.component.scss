@@ -637,6 +637,45 @@ position: fixed;
 .row.gap{ gap:10px; }
 button[disabled]{ opacity:.5; cursor:not-allowed; }
 
+/* Cantidad: usa estilo “chip” */
+.drawer .qty{
+  display:flex; align-items:center; gap:8px;
+}
+.drawer .qty .chip{
+  padding:6px 10px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.1);
+  background:transparent;
+  color:inherit; cursor:pointer; font-weight:800;
+  min-width: 40px; min-height: 34px;
+  transition: background .12s ease, border-color .12s ease, transform .06s ease;
+}
+:host.dark .drawer .qty .chip{ border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.02); }
+.drawer .qty .chip:hover{ background: rgba(0,0,0,.05); }
+:host.dark .drawer .qty .chip:hover{ background: rgba(255,255,255,.08); }
+.drawer .qty .chip:active{ transform: translateY(1px); }
+.drawer .qty .qty-num{ min-width:28px; text-align:center; font-weight:900; }
+
+/* Botón “Eliminar” versión pequeña */
+.drawer .qty .clear.sm{
+  padding:6px 10px; border-radius:12px; border:1px solid rgba(0,0,0,.1);
+  background:transparent; color:inherit; cursor:pointer; font-weight:700;
+}
+:host.dark .drawer .qty .clear.sm{ border-color: rgba(255,255,255,.12); }
+
+/* Footer: mismos estilos de filtros */
+.drawer footer .clear{
+  padding:8px 12px; border-radius:12px; border:1px solid rgba(0,0,0,.1);
+  background:transparent; color:inherit; cursor:pointer; font-weight:700;
+}
+:host.dark .drawer footer .clear{ border-color: rgba(255,255,255,.12); }
+
+.drawer footer .apply{
+  padding:8px 12px; border-radius:12px; border:none;
+  background:#facc15; color:#000; font-weight:800; cursor:pointer;
+}
+.drawer footer .apply[disabled]{ opacity:.6; cursor:not-allowed; }
+
 /* =========================
    COLECCIONES (toggle por título)
    ========================= */
@@ -920,6 +959,49 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   /* el grid dentro de la colección ya se centra con tus reglas;
      solo afinamos el gap a un pelín menor si quieres */
   .collection .grid{ gap: 16px; margin-top: 8px; }
+
+  .drawer .qty{ gap:6px; }
+  .drawer .qty .chip{ min-width: 38px; min-height: 32px; padding:6px 9px; }
+  .drawer .qty .clear.sm{ padding:6px 9px; }
+
+  /* Coloca los botones en columna y a ancho completo */
+  .drawer footer .row.gap{
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;                /* coherente con tus gaps móviles */
+  }
+
+  /* Botón "Vaciar" con estilo de filtros */
+  .drawer footer .clear{
+    width: 100%;
+    min-height: 44px;         /* área táctil recomendada */
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,.1);
+    background: transparent;
+    font-weight: 800;
+  }
+  :host.dark .drawer footer .clear{
+    border-color: rgba(255,255,255,.12);
+  }
+
+  /* Botón "Checkout" (primario amarillo) */
+  .drawer footer .apply{
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 12px;
+    background: #facc15;
+    color: #000;
+    font-weight: 900;
+  }
+  .drawer footer .apply[disabled]{ opacity:.6; cursor:not-allowed; }
+
+  /* Compacta un pelín los márgenes del footer en móvil */
+  .drawer footer{
+    padding: 10px;
+  }
 }
 
 @media (max-width: 390px){
@@ -1010,4 +1092,45 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   /* si vas muy justo de espacio, oculta el contador */
   /* .collection-title small{ display:none; } */
   .collection .grid{ gap: 14px; }
+
+  .drawer .qty{ gap:6px; }
+
+  .drawer .qty .chip{
+    min-width: 36px;
+    min-height: 30px;
+    padding: 5px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+  }
+
+  .drawer .qty .qty-num{
+    min-width: 24px;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  .drawer .qty .clear.sm{
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+  }
+
+  .drawer footer .clear{
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .drawer footer .apply{
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+
+  .drawer footer .row.gap{ gap: 8px; }
+
+  /* opcional: compactar cabecera y miniaturas del item */
+  .drawer header{ padding: 10px; }
+  .drawer .content{ padding: 10px; }
+  .drawer .item img{ width: 56px; height: 56px; border-radius: 10px; }
 }

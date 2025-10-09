@@ -1,6 +1,6 @@
 import { Component, HostBinding, HostListener, inject, signal, computed, effect  } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
@@ -10,7 +10,7 @@ import { Product } from './models/product.model';
 @Component({
 selector: 'app-root',
 standalone: true,
-imports: [CommonModule],
+imports: [CommonModule, RouterOutlet],
 templateUrl: './app.component.html',
 styleUrls: ['./app.component.scss']
 })
@@ -198,7 +198,8 @@ export class AppComponent {
     checkoutNow(){
         const items = this.cartSvc.toCheckoutItems();
         if(!items.length) return;
-        this.router.navigateByUrl('/checkout');
+        this.cartOpen = false;                 // cierra el drawer
+        this.router.navigate(['/checkout']);   // navega a la página
     }
 
     enterShop(){

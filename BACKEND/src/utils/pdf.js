@@ -16,9 +16,9 @@ async function generateReceiptPDF(order, { outDir, brandLogoUrl }) {
   doc.fontSize(18).text('Recibo de compra — BYE K1TTY', 200, 40).moveDown();
 
   doc.fontSize(10).text('Vendedor:', { underline:true });
-  doc.text('BYE K1TTY — NIF/CIF: X1234567Z');
-  doc.text('C/ Dirección 123, 28000 Madrid, España');
-  doc.text('Email: soporte@byek1tty.com · Tel: +34 000 000 000').moveDown();
+  doc.text('BYE K1TTY — NIF/CIF: 48273903P');
+  doc.text('C/Ripollès 87, La mora. Tarragona, 43008');
+  doc.text('Email: aharonbj96@gmail.com · Tel: +34 634 183 862').moveDown();
 
   const b = order.buyer||{};
   doc.text('Comprador:', { underline:true });
