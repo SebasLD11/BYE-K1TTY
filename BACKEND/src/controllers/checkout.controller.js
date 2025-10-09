@@ -21,7 +21,7 @@ const summarySchema = z.object({
 function applyDiscount(subtotal, code) {
   const normalized = String(code||'').trim().toUpperCase();
   if (!normalized) return { discountCode:null, discountAmount:0 };
-  if (['BK5','BYE5','DISCOUNT5'].includes(normalized)) return { discountCode:normalized, discountAmount:+(subtotal*0.05).toFixed(2) };
+  if (['BK10','BYE10','DISCOUNT10'].includes(normalized)) return { discountCode:normalized, discountAmount:+(subtotal*0.9).toFixed(2) };
   return { discountCode:normalized, discountAmount:0 };
 }
 
