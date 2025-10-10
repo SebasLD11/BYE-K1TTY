@@ -21,7 +21,7 @@ export class AppComponent {
     checkout = inject(CheckoutService);
     router = inject(Router);   // 👈 añade esta línea
     /** ¿Estamos en /checkout? (reactivo) */
-    isCheckout = signal(false);
+    isRouted = signal(false);
     // Guarda el último foco para devolverlo al cerrar (opcional)
     private _lastFocus: HTMLElement | null = null;
 
@@ -83,9 +83,10 @@ export class AppComponent {
 
     constructor(){
         // Inicializa y mantén sincronizado el flag de ruta
-        this.isCheckout.set(this.router.url.startsWith('/checkout'));
+        const isR = (u: string) => u.startsWith('/checkout') || u.startsWith('/thanks');
+        this.isRouted.set(isR(this.router.url));
         this.router.events.pipe(filter(e => e instanceof NavigationEnd))
-        .subscribe(() => this.isCheckout.set(this.router.url.startsWith('/checkout')));
+        .subscribe(() => this.isRouted.set(isR(this.router.url)));
         this.productSvc.list().subscribe(ps => {
             const normalized = ps.map(p => ({ ...p, images: (p.images ?? []).map(src => this.normalizeAsset(src)) }));
             this.products.set(normalized);

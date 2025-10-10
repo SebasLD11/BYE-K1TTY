@@ -45,8 +45,7 @@ export class CheckoutSummaryComponent {
     readonly grandTotal = computed(() => {
         const s = this.summary();
         if (!s) return 0;
-        const ship = this.shipping();
-        const shipCost = ship?.cost ?? 0;
+        const shipCost = this.shipping()?.cost ?? 0;
         return +(s.subtotal - s.discountAmount + shipCost).toFixed(2);
     });
 
@@ -85,17 +84,19 @@ export class CheckoutSummaryComponent {
             next: ({ receiptUrl, share }) => {
             this.cart.clear();
 
-            // ⚠️ Navegación robusta: SOLO query params (sin state)
-            const mb  = share?.mailtoBuyer  ? encodeURIComponent(share.mailtoBuyer)  : '';
-            const mv  = share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : '';
-            const wav = share?.waVendor     ? encodeURIComponent(share.waVendor)     : '';
-            const r   = encodeURIComponent(receiptUrl);
+            // ⚠️ Deja que Angular serialice; no hagas encodeURIComponent a mano
+            const params: Record<string, string> = { r: receiptUrl };
+            if (share?.mailtoBuyer)  params['mb']  = share.mailtoBuyer;
+            if (share?.mailtoVendor) params['mv']  = share.mailtoVendor;
+            if (share?.waVendor)     params['wav'] = share.waVendor;
 
-            this.router.navigateByUrl(`/thanks?r=${r}&mb=${mb}&mv=${mv}&wav=${wav}`);
+            this.router.navigate(['thanks'], { queryParams: params, replaceUrl: true });
             },
+            error: () => this.loading.set(false),
             complete: () => this.loading.set(false)
         });
     }
+
     backToShop(){
         this.router.navigate(['/'], { fragment: 'shopTop' });
     }

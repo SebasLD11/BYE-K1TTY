@@ -62,20 +62,22 @@
       </div>
 
       <div class="section" *ngIf="shippingOptions().length">
-        <h3 class="form-title">
+        <h3 class="form-title" *ngIf="summary() as s">
           Envío
-          <small *ngIf="summary() && (summary()!.subtotal - summary()!.discountAmount) >= 100">
+          <small *ngIf="(s.subtotal - s.discountAmount) >= 100">
             — ¡Gratis a partir de 100€!
           </small>
         </h3>
         <div class="ship-list">
-          <label class="radio" *ngFor="let opt of shippingOptions()" [class.active]="shipping()?.carrier===opt.carrier && shipping()?.service===opt.service">
+          <label class="radio"
+                *ngFor="let opt of shippingOptions()"
+                [class.active]="shipping()?.carrier===opt.carrier && shipping()?.service===opt.service">
             <span class="left">
               <input type="radio" name="ship" (change)="chooseShipping(opt)">
               <span>{{opt.carrier}}</span>
               <span class="svc">· {{opt.service}}</span>
             </span>
-            <strong>{{ opt.cost | currency:'EUR' }}</strong>
+            <strong>{{ (opt.cost ?? 0) | currency:'EUR' }}</strong>
           </label>
         </div>
       </div>

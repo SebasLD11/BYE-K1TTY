@@ -42,7 +42,7 @@
     </div>
   </section>
   <!-- Cuando NO es /checkout, muestro Shop/About -->
-  <ng-container *ngIf="!isCheckout(); else checkoutTpl">
+  <ng-container *ngIf="!isRouted(); else routedTpl">
     <!-- SHOP --> 
     <section *ngIf="tab()==='shop'" class="shop" id="shopTop">
       <div class="shop-header">
@@ -275,7 +275,7 @@
     </section>  
   </ng-container>
   <!-- Cuando SÍ es /checkout, solo router-outlet -->
-  <ng-template #checkoutTpl>
+  <ng-template #routedTpl>
     <router-outlet></router-outlet>
   </ng-template>
 </main>
@@ -360,7 +360,7 @@
   <footer>
     <div class="row">
       <span>Total</span>
-      <strong>{{ cartSvc.total$ | currency:'EUR' }}</strong>
+      <strong>{{ cartSvc.total() | currency:'EUR' }}</strong>
     </div>
     <div class="row gap">
       <button class="clear" (click)="cartSvc.clear()">Vaciar</button>
