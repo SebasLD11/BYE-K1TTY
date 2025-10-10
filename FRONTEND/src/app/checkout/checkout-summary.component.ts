@@ -71,7 +71,6 @@ export class CheckoutSummaryComponent {
         const id = this.orderId();
         const ship = this.shipping();
         const buyer = this.form.getRawValue();
-
         if (!id || !ship) return;
 
         this.loading.set(true);
@@ -82,28 +81,17 @@ export class CheckoutSummaryComponent {
             buyer,
             discountCode: buyer.discountCode || null,
             shipping: ship
-        })
-        .subscribe({
+        }).subscribe({
             next: ({ receiptUrl, share }) => {
-            // Limpia carrito y navega a /thanks (sin popups aquí)
             this.cart.clear();
 
-            this.router.navigate(['/thanks'], {
-                state: {
-                receiptUrl,
-                // Pasamos los enlaces generados en backend (si alguno no viene, va null)
-                mailtoBuyer:  share?.mailtoBuyer  ?? null,
-                mailtoVendor: share?.mailtoVendor ?? null,
-                waVendor:     share?.waVendor     ?? null
-                },
-                // Fallback por si el usuario recarga / comparte la URL
-                queryParams: {
-                r:   encodeURIComponent(receiptUrl),
-                mb:  share?.mailtoBuyer  ? encodeURIComponent(share.mailtoBuyer)  : null,
-                mv:  share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : null,
-                wav: share?.waVendor     ? encodeURIComponent(share.waVendor)     : null
-                }
-            });
+            // ⚠️ Navegación robusta: SOLO query params (sin state)
+            const mb  = share?.mailtoBuyer  ? encodeURIComponent(share.mailtoBuyer)  : '';
+            const mv  = share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : '';
+            const wav = share?.waVendor     ? encodeURIComponent(share.waVendor)     : '';
+            const r   = encodeURIComponent(receiptUrl);
+
+            this.router.navigateByUrl(`/thanks?r=${r}&mb=${mb}&mv=${mv}&wav=${wav}`);
             },
             complete: () => this.loading.set(false)
         });

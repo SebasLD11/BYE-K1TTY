@@ -107,8 +107,17 @@
       <div class="section totals">
         <div class="row"><span>Subtotal</span><span>{{ s.subtotal | currency:'EUR' }}</span></div>
         <div class="row" *ngIf="s.discountAmount>0"><span>Descuento</span><span>-{{ s.discountAmount | currency:'EUR' }}</span></div>
-        <div class="row"><span>IVA (incl.)</span><span>{{ summary()?.vatAmount | currency:'EUR' }}</span></div>
-        <div class="row" *ngIf="shipping()"><span>Envío</span><span>{{ shipping()?.cost | currency:'EUR' }}</span></div>
+        <!-- 👇 IMPORTANTE: usa s.vatAmount (no summary()...) -->
+        <div class="row">
+          <span>IVA (incl.)</span><span>{{ s.vatAmount | currency:'EUR' }}</span>
+        </div>
+
+        <!-- 👇 IMPORTANTE: default seguro para cost -->
+        <div class="row" *ngIf="shipping() as ship">
+          <span>Envío</span><span>{{ (ship.cost ?? 0) | currency:'EUR' }}</span>
+        </div>
+
+        <!-- 👇 IMPORTANTE: usa el total del backend -->
         <div class="row grand">
           <span>Total</span>
           <span>{{ grandTotal() | currency:'EUR' }}</span>
