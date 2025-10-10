@@ -42,7 +42,7 @@
     </div>
   </section>
   <!-- Cuando NO es /checkout, muestro Shop/About -->
-  <ng-container *ngIf="!isCheckout(); else checkoutTpl">
+  <ng-container  *ngIf="!isRoutedPage()">
     <!-- SHOP --> 
     <section *ngIf="tab()==='shop'" class="shop" id="shopTop">
       <div class="shop-header">
@@ -275,7 +275,7 @@
     </section>  
   </ng-container>
   <!-- Cuando SÍ es /checkout, solo router-outlet -->
-  <ng-template #checkoutTpl>
+  <ng-template *ngIf="isRoutedPage()">
     <router-outlet></router-outlet>
   </ng-template>
 </main>
