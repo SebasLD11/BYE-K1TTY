@@ -13,7 +13,6 @@ export const routes: Routes = [
     path: 'thanks',
     loadComponent: () => import('./thanks/thanks.component').then(m => m.ThanksComponent)
   },
-  { path: '', pathMatch: 'full', redirectTo: '' }, // tu home actual
 ];
 
 export const appConfig: ApplicationConfig = {
