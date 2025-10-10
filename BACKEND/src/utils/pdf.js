@@ -65,7 +65,7 @@ async function generateReceiptPDF(order, { outDir, brandLogoUrl }){
 
   // Comprador / Envío
   const b = order.buyer || {};
-  const blockTop = Math.max(doc.y + 8, yTop + 40);
+  const blockTop = Math.max(doc.y + 8, yTop + 45);
 
   doc.fontSize(11).fillColor('#000').text('Comprador', startX, blockTop, { width: colW });
   doc.moveDown(0.2);
@@ -169,7 +169,7 @@ async function generateReceiptPDF(order, { outDir, brandLogoUrl }){
 
   // Pie
   doc.moveDown(1);
-  doc.fontSize(9).fillColor('#666').text('Gracias por tu compra. Cupón -5%: BK5', startX, doc.y, { width: usableW });
+  doc.fontSize(9).fillColor('#666').text('Gracias por tu compra. Cupón -10% para próxima compra: BK10', startX, doc.y, { width: usableW });
 
   doc.end();
   await new Promise((res, rej) => { stream.on('finish', res); stream.on('error', rej); });
