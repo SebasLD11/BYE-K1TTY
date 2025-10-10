@@ -81,44 +81,70 @@ exports.summary = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// === NUEVO finalize SIN SMTP NI TOKEN WA ===
+// helper para extraer email de "Name <mail@dom>" si usas FROM_EMAIL
+const pickEmail = (s='') => {
+  const m = String(s).match(/<([^>]+)>/);
+  if (m) return m[1].trim();
+  if (s.includes('@')) return s.trim();
+  return '';
+};
+
 exports.finalize = async (req, res, next) => {
   try {
     const input = summarySchema.parse(req.body);
     const s = await buildSummary(input);
 
-    // crea/actualiza order
     const order = req.body.orderId
       ? await Order.findByIdAndUpdate(req.body.orderId, { ...s, status:'awaiting_payment' }, { new:true })
       : await Order.create({ ...s, status:'awaiting_payment' });
 
-    // genera PDF
     const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
     const { filename } = await generateReceiptPDF(order.toObject(), { outDir, brandLogoUrl: process.env.BRAND_LOGO_URL });
 
-    // BASE_URL no existe: derivamos del request (trust proxy ya está en server.js)
     const base = `${req.protocol}://${req.get('host')}`;
     const receiptUrl = `${base}/receipts/${filename}`;
     await Order.findByIdAndUpdate(order._id, { receiptPath: filename });
 
-    // enlaces de “compartir” sin credenciales
-    const subject = 'Tu recibo — BYE K1TTY';
-    const body = `¡Gracias por tu compra en BYE K1TTY!
-    Total: €${s.total.toFixed(2)}
-    Recibo PDF: ${receiptUrl}
-    Cupón -5%: BK5`;
+    // ===== Enlaces preparados =====
+    const buyerEmail  = order.buyer?.email || '';
+    const vendorEmail = process.env.VENDOR_EMAIL || pickEmail(process.env.FROM_EMAIL || '');
 
-    const mailto = `mailto:${encodeURIComponent(order.buyer.email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    const subjBuyer = 'Tu recibo — BYE K1TTY';
+    const bodyBuyer = [
+      '¡Gracias por tu compra en BYE K1TTY!',
+      `Total: €${s.total.toFixed(2)}`,
+      `Recibo (PDF): ${receiptUrl}`,
+      'Cupón -5%: BK5'
+    ].join('\n');
+
+    const subjVendor = `Nuevo pedido Bizum — ${String(order._id).slice(-8)}`;
+    const bodyVendor = [
+      `Pedido: ${String(order._id)}`,
+      `Comprador: ${order.buyer.fullName} (${order.buyer.phone})`,
+      `Total: €${s.total.toFixed(2)}`,
+      `Recibo: ${receiptUrl}`
+    ].join('\n');
+
+    const mailtoBuyer  = buyerEmail  ? `mailto:${encodeURIComponent(buyerEmail)}?subject=${encodeURIComponent(subjBuyer)}&body=${encodeURIComponent(bodyBuyer)}` : null;
+    const mailtoVendor = vendorEmail ? `mailto:${encodeURIComponent(vendorEmail)}?subject=${encodeURIComponent(subjVendor)}&body=${encodeURIComponent(bodyVendor)}` : null;
 
     const vendor = (process.env.VENDOR_WHATSAPP_NUMBER || '').replace(/^\+/, '');
-    const wa = vendor
+    const waVendor = vendor
       ? `https://wa.me/${vendor}?text=${encodeURIComponent(`Nuevo pedido Bizum:
       Cliente: ${order.buyer.fullName} (${order.buyer.phone})
       Total: €${order.total.toFixed(2)}
       Recibo: ${receiptUrl}`)}`
       : null;
 
-    // devolvemos receipt + enlaces para que el front los use
-    return res.json({ ok:true, orderId: order._id, receiptUrl, share: { mailto, wa } });
+    return res.json({
+      ok: true,
+      orderId: order._id,
+      receiptUrl,
+      share: {
+        mailtoBuyer,     // para enviar al comprador (desde Thanks)
+        mailtoVendor,    // para notificar al vendedor
+        waVendor         // click-to-chat con texto prellenado
+      }
+    });
   } catch (e) { next(e); }
 };

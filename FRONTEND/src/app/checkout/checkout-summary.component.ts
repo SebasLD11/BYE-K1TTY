@@ -71,21 +71,27 @@ export class CheckoutSummaryComponent {
         const id = this.orderId(); const ship = this.shipping(); const buyer = this.form.getRawValue();
         if (!id || !ship) return;
         this.loading.set(true);
+
         this.api.finalize({ orderId: id, items: this.items(), buyer, discountCode: buyer.discountCode || null, shipping: ship })
         .subscribe({
             next: ({ receiptUrl, share }) => {
                 this.cart.clear();
-                // Abre el PDF
-                window.open(receiptUrl, '_blank');
-
-                // Si el navegador soporta compartir nativo
-                if (navigator.share) {
-                    navigator.share({ title: 'Recibo BYE K1TTY', text: 'Tu recibo de compra', url: receiptUrl }).catch(()=>{});
+                // Navega a /thanks con los enlaces del backend
+                this.router.navigate(['/thanks'], {
+                state: {
+                    receiptUrl,
+                    mailtoBuyer: share?.mailtoBuyer ?? null,
+                    mailtoVendor: share?.mailtoVendor ?? null,
+                    waVendor: share?.waVendor ?? null
+                },
+                // Fallback en URL por si se recarga / se comparte
+                queryParams: {
+                    r: encodeURIComponent(receiptUrl),
+                    mb: share?.mailtoBuyer ? encodeURIComponent(share.mailtoBuyer) : null,
+                    mv: share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : null,
+                    wav: share?.waVendor ? encodeURIComponent(share.waVendor) : null
                 }
-
-                // Fallbacks sin credenciales: abrir correo y WhatsApp prellenados
-                if (share?.mailto) window.location.href = share.mailto; // abre el cliente de correo del comprador
-                if (share?.wa) window.open(share.wa, '_blank');         // abre chat con el vendedor
+                });
             },
             complete: () => this.loading.set(false)
         });

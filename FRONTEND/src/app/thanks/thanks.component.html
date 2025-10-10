@@ -1,0 +1,34 @@
+<section class="thanks container">
+  <header class="head">
+    <h2>¡Gracias por tu compra!</h2>
+    <p class="sub">Tu recibo está listo. Puedes abrirlo o reenviarlo cuando quieras.</p>
+  </header>
+
+  <article class="card">
+    <div class="section">
+      <div class="info">
+        <p class="muted" *ngIf="receiptUrl(); else missing">
+          Recibo: <a [href]="receiptUrl()!" target="_blank" rel="noopener">abrir PDF</a>
+        </p>
+        <ng-template #missing>
+          <p class="warn">No se ha encontrado el recibo en esta sesión.</p>
+        </ng-template>
+      </div>
+
+      <div class="actions">
+        <button class="apply" (click)="openPdf()" [disabled]="!receiptUrl()">Abrir recibo (PDF)</button>
+        <button class="clear" (click)="sendEmailBuyer()" [disabled]="!mailtoBuyer()">Enviar recibo al email</button>
+        <button class="clear" (click)="sendWhatsAppVendor()" [disabled]="!waVendor()">Enviar al WhatsApp del vendedor para pago</button>
+      </div>
+      <!-- Si quieres mostrar también notificación por email al vendedor:-->
+      <div class="actions">
+        <button class="ghost" (click)="notifyVendorEmail()" [disabled]="!mailtoVendor()">Notificar por email al vendedor</button>
+      </div>
+      
+
+      <div class="more">
+        <button class="ghost" (click)="backToShop()">← Volver a la tienda</button>
+      </div>
+    </div>
+  </article>
+</section>
