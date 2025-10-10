@@ -68,30 +68,42 @@ export class CheckoutSummaryComponent {
     }
     chooseShipping(opt: ShippingSel) { this.shipping.set(opt); }
     finalize() {
-        const id = this.orderId(); const ship = this.shipping(); const buyer = this.form.getRawValue();
+        const id = this.orderId();
+        const ship = this.shipping();
+        const buyer = this.form.getRawValue();
+
         if (!id || !ship) return;
+
         this.loading.set(true);
 
-        this.api.finalize({ orderId: id, items: this.items(), buyer, discountCode: buyer.discountCode || null, shipping: ship })
+        this.api.finalize({
+            orderId: id,
+            items: this.items(),
+            buyer,
+            discountCode: buyer.discountCode || null,
+            shipping: ship
+        })
         .subscribe({
             next: ({ receiptUrl, share }) => {
-                this.cart.clear();
-                // Navega a /thanks con los enlaces del backend
-                this.router.navigate(['/thanks'], {
+            // Limpia carrito y navega a /thanks (sin popups aquí)
+            this.cart.clear();
+
+            this.router.navigate(['/thanks'], {
                 state: {
-                    receiptUrl,
-                    mailtoBuyer: share?.mailtoBuyer ?? null,
-                    mailtoVendor: share?.mailtoVendor ?? null,
-                    waVendor: share?.waVendor ?? null
+                receiptUrl,
+                // Pasamos los enlaces generados en backend (si alguno no viene, va null)
+                mailtoBuyer:  share?.mailtoBuyer  ?? null,
+                mailtoVendor: share?.mailtoVendor ?? null,
+                waVendor:     share?.waVendor     ?? null
                 },
-                // Fallback en URL por si se recarga / se comparte
+                // Fallback por si el usuario recarga / comparte la URL
                 queryParams: {
-                    r: encodeURIComponent(receiptUrl),
-                    mb: share?.mailtoBuyer ? encodeURIComponent(share.mailtoBuyer) : null,
-                    mv: share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : null,
-                    wav: share?.waVendor ? encodeURIComponent(share.waVendor) : null
+                r:   encodeURIComponent(receiptUrl),
+                mb:  share?.mailtoBuyer  ? encodeURIComponent(share.mailtoBuyer)  : null,
+                mv:  share?.mailtoVendor ? encodeURIComponent(share.mailtoVendor) : null,
+                wav: share?.waVendor     ? encodeURIComponent(share.waVendor)     : null
                 }
-                });
+            });
             },
             complete: () => this.loading.set(false)
         });
