@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendMail({ to, subject, text, html, attachments }) {
-  const from = process.env.FROM_EMAIL || process.env.SMTP_USER;
+  const from = process.env.VENDOR_EMAIL || process.env.SMTP_USER;
   return transporter.sendMail({ from, to, subject, text, html, attachments });
 }
 
