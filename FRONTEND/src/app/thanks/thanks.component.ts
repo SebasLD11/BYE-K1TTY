@@ -38,12 +38,19 @@ export class ThanksComponent {
   openPdf(){ const u = this.receiptUrl(); if (u) window.open(u, '_blank'); }
 
   sendEmailBuyer(){
-    const id = this.oid(); if (!id) return;
-    this.sendingBuyer.set(true);
-    this.api.emailBuyer(id).subscribe({
-      next: () => alert('Recibo enviado a tu email.'),
-      error: () => { const m = this.mailtoBuyer(); if (m) window.location.href = m; },
-      complete: () => this.sendingBuyer.set(false)
+    const orderId = this.route.snapshot.queryParamMap.get('oid');
+    // Si tienes un servicio con api.emailBuyer:
+    this.api.emailBuyer(orderId!).subscribe({
+      next: () => alert('Recibo enviado por email.'),
+      error: (err) => {
+        // Fallback automático a mailto si el backend no tiene SMTP
+        if (err?.error?.code === 'email_service_unconfigured' || err.status === 400) {
+          const m = this.mailtoBuyer();
+          if (m) window.location.href = m;
+        } else {
+          alert('No se pudo enviar el email (intenta de nuevo o usa el botón de email).');
+        }
+      }
     });
   }
 

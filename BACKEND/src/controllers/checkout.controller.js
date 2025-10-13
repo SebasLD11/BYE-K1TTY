@@ -4,8 +4,8 @@ const Product = require('../models/Product');
 const { quoteOptions } = require('../utils/shipping');
 const path = require('path');
 const { generateReceiptPDF } = require('../utils/pdf');
-const { sendMail } = require('../utils/email');
-
+const { sendMail, hasSMTP } = require('../utils/email');
+const pickEmail = s => (String(s).match(/<([^>]+)>/)?.[1] || (s.includes('@') ? s.trim() : ''));
 
 const itemSchema = z.object({ id: z.string(), qty: z.number().min(1), size: z.string().min(1).nullable().optional() });
 const buyerSchema = z.object({
@@ -160,49 +160,76 @@ exports.finalize = async (req, res, next) => {
 
 exports.emailBuyer = async (req, res, next) => {
   try {
-    const { orderId } = z.object({ orderId: z.string().min(8) }).parse(req.body);
-    const order = await Order.findById(orderId).lean();
-    if (!order) throw Object.assign(new Error('order_not_found'), { status:404 });
+    if (!hasSMTP()) {
+      return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
+    }
 
-    const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
-    const file = order.receiptPath ? path.join(outDir, order.receiptPath) : null;
+    const { orderId } = req.body || {};
+    if (!orderId) return res.status(400).json({ ok:false, code:'order_id_missing' });
+
+    const order = await Order.findById(orderId).lean();
+    if (!order) return res.status(404).json({ ok:false, code:'order_not_found' });
+
+    const to = order.buyer?.email;
+    if (!to) return res.status(400).json({ ok:false, code:'buyer_email_missing' });
+
     const base = `${req.protocol}://${req.get('host')}`;
-    const receiptUrl = `${base}/receipts/${order.receiptPath}`;
-    const { buyer } = buildComms(order, receiptUrl);
+    const receiptUrl = order.receiptPath ? `${base}/receipts/${order.receiptPath}` : null;
+
+    const subject = 'Tu recibo — BYE K1TTY';
+    const text = [
+      '¡Gracias por tu compra en BYE K1TTY!',
+      `Total: €${Number(order.total).toFixed(2)}`,
+      'Adjuntamos tu recibo en PDF.',
+      'Si tienes cualquier duda, responde a este correo.',
+    ].join('\n');
 
     await sendMail({
-      to: order.buyer.email,
-      subject: buyer.subject,
-      text: buyer.text,
-      attachments: file ? [{ filename: `recibo_${order._id}.pdf`, path: file }] : []
+      to,
+      subject,
+      text,
+      attachments: receiptUrl
+        ? [{ filename: path.basename(order.receiptPath), path: receiptUrl, contentType:'application/pdf' }]
+        : []
     });
 
-    res.json({ ok: true });
-  } catch (e) { next(e); }
+    return res.json({ ok:true });
+  } catch (e) {
+    // Si viene del transporter sin SMTP configurado, asegúrate del 400:
+    if (e.code === 'email_service_unconfigured') {
+      return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
+    }
+    console.error('[emailBuyer]', e);
+    return res.status(500).json({ ok:false, code:'email_send_failed' });
+  }
 };
 
-exports.emailVendor = async (req, res, next) => {
-  try {
-    const { orderId } = z.object({ orderId: z.string().min(8) }).parse(req.body);
+exports.emailVendor = async (req,res,next)=>{
+  try{
+    const to = req.body?.to || process.env.VENDOR_EMAIL || pickEmail(process.env.FROM_EMAIL || '');
+    if (!to) return res.status(400).json({ ok:false, code:'vendor_email_missing' });
+
+    if (!hasSMTP()) return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
+
+    const { orderId } = req.body || {};
     const order = await Order.findById(orderId).lean();
-    if (!order) throw Object.assign(new Error('order_not_found'), { status:404 });
+    if (!order) return res.status(404).json({ ok:false, code:'order_not_found' });
 
-    const vendorEmail = process.env.VENDOR_EMAIL || '';
-    if (!vendorEmail) throw Object.assign(new Error('vendor_email_missing'), { status:400 });
-
-    const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
-    const file = order.receiptPath ? path.join(outDir, order.receiptPath) : null;
     const base = `${req.protocol}://${req.get('host')}`;
-    const receiptUrl = `${base}/receipts/${order.receiptPath}`;
-    const { vendor } = buildComms(order, receiptUrl);
+    const receiptUrl = order.receiptPath ? `${base}/receipts/${order.receiptPath}` : null;
 
     await sendMail({
-      to: vendorEmail,
-      subject: vendor.subject,
-      text: vendor.text,
-      attachments: file ? [{ filename: `recibo_${order._id}.pdf`, path: file }] : []
+      to,
+      subject: `Nuevo pedido Bizum — ${String(order._id).slice(-8)}`,
+      text: [
+        `Pedido: ${order._id}`,
+        `Comprador: ${order.buyer.fullName} (${order.buyer.phone})`,
+        `Total: €${order.total.toFixed(2)}`,
+        `Recibo: ${receiptUrl}`
+      ].join('\n'),
+      attachments: receiptUrl ? [{ filename: path.basename(order.receiptPath), path: receiptUrl, contentType:'application/pdf' }] : []
     });
 
-    res.json({ ok: true });
-  } catch (e) { next(e); }
+    res.json({ ok:true });
+  }catch(e){ next(e); }
 };

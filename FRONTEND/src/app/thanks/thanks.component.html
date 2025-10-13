@@ -62,7 +62,7 @@
           <h4>Paso 4 · Confirma y paga por WhatsApp</h4>
           <p>Se abrirá WhatsApp con un mensaje prellenado para confirmar el pedido y realizar el pago por Bizum.</p>
           <div class="actions">
-            <button class="apply" (click)="sendWhatsAppVendor()" [disabled]="!waVendor()">
+            <button class="apply" (click)="sendWhatsAppVendor()" *ngIf="waVendor()" [href]="waVendor()!" target="_blank" rel="noopener">
               Abrir WhatsApp para pagar
             </button>
           </div>
