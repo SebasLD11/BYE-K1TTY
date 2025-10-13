@@ -81,16 +81,15 @@ export class CheckoutSummaryComponent {
             discountCode: buyer.discountCode || null,
             shipping: ship
         }).subscribe({
-            next: ({ receiptUrl, share }) => {
-            this.cart.clear();
+            next: ({ orderId, receiptUrl, share }) => {
+                this.cart.clear();
 
-            // ⚠️ Deja que Angular serialice; no hagas encodeURIComponent a mano
-            const params: Record<string, string> = { r: receiptUrl };
-            if (share?.mailtoBuyer)  params['mb']  = share.mailtoBuyer;
-            if (share?.mailtoVendor) params['mv']  = share.mailtoVendor;
-            if (share?.waVendor)     params['wav'] = share.waVendor;
+                const params: Record<string, string> = { oid: orderId, r: receiptUrl };
+                if (share?.mailtoBuyer)  params['mb']  = share.mailtoBuyer;
+                if (share?.mailtoVendor) params['mv']  = share.mailtoVendor;
+                if (share?.waVendor)     params['wav'] = share.waVendor;
 
-            this.router.navigate(['thanks'], { queryParams: params, replaceUrl: true });
+                this.router.navigate(['thanks'], { queryParams: params, replaceUrl: true });
             },
             error: () => this.loading.set(false),
             complete: () => this.loading.set(false)

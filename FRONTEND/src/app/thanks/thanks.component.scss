@@ -37,12 +37,28 @@
 
 .more{ display:flex; justify-content:flex-start; }
 
+.steps{ counter-reset: step; list-style:none; margin:0; padding:0; display:grid; gap:16px; }
+.step{ padding:12px 0; border-top:1px solid rgba(0,0,0,.06); }
+.step:first-child{ border-top:none; }
+.step h4{ margin:0 0 4px 0; font-weight:800; }
+:host-context(.dark) .step{ border-color: rgba(255,255,255,.08); }
+
 @media (max-width: 768px){
   .section{ padding:12px; gap:14px; }
   .actions{ flex-direction: column; align-items: stretch; }
   .apply, .clear{ width:100%; min-height:44px; }
+
+  /* …y añade esto para los pasos */
+  .steps{ gap: 14px; }
+  .step{ padding: 10px 0; }
+  .step h4{ font-size: 16px; line-height: 1.25; }
+  .ghost{ width: 100%; min-height: 44px; } /* coherencia con apply/clear */
 }
 @media (max-width: 390px){
   .apply, .clear{ padding:9px 10px; border-radius:10px; font-size:13px; }
   .ghost{ padding:7px 10px; border-radius:10px; font-size:13px; }
+  /* …y añade esto para los pasos */
+  .steps{ gap: 12px; }
+  .step{ padding: 8px 0; }
+  .step h4{ font-size: 15px; }
 }

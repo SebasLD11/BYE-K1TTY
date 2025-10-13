@@ -4,6 +4,8 @@ const Product = require('../models/Product');
 const { quoteOptions } = require('../utils/shipping');
 const path = require('path');
 const { generateReceiptPDF } = require('../utils/pdf');
+const { sendMail } = require('../utils/email');
+
 
 const itemSchema = z.object({ id: z.string(), qty: z.number().min(1), size: z.string().min(1).nullable().optional() });
 const buyerSchema = z.object({
@@ -25,6 +27,46 @@ function applyDiscount(subtotal, code) {
   return { discountCode:normalized, discountAmount:0 };
 }
 
+// WA robusto
+function waLinkForVendor(number, order, receiptUrl){
+  const digits = String(number || '').replace(/\D+/g,'');
+  if (!digits) return null;
+  const text = [
+    'Nuevo pedido Bizum:',
+    `Cliente: ${order?.buyer?.fullName || ''} (${order?.buyer?.phone || ''})`,
+    `Total: €${(order?.total || 0).toFixed(2)}`,
+    `Recibo: ${receiptUrl}`
+  ].join('\n');
+  const qs = new URLSearchParams({ text }).toString();
+  return `https://wa.me/${digits}?${qs}`;
+}
+
+// Unifica mensajes de email/WA para NO duplicar lógica
+function buildComms(order, receiptUrl){
+  const total = (order?.total || 0).toFixed(2);
+
+  const buyer = {
+    subject: 'Tu recibo — BYE K1TTY',
+    text:
+    `¡Gracias por tu compra en BYE K1TTY!
+    Adjuntamos tu recibo en PDF.
+    Total: €${total}
+    Si tienes cualquier duda, responde a este correo.`
+  };
+
+  const vendor = {
+    subject: `Nuevo pedido BYE K1TTY — ${String(order?._id || '').slice(-8)}`,
+    text:
+    `Nuevo pedido recibido (pendiente de pago Bizum).
+    Cliente: ${order?.buyer?.fullName} (${order?.buyer?.phone})
+    Total: €${total}
+    Adjuntamos el recibo PDF.`
+  };
+
+  const waVendor = waLinkForVendor(process.env.VENDOR_WHATSAPP_NUMBER, order, receiptUrl);
+  return { buyer, vendor, waVendor };
+}
+
 async function buildSummary({ items, buyer, discountCode, shipping }) {
   const ids = items.map(i => i.id);
   const dbProducts = await Product.find({ _id: { $in: ids } }).lean();
@@ -40,6 +82,7 @@ async function buildSummary({ items, buyer, discountCode, shipping }) {
       qty: Math.max(1, Number(i.qty||1)), size: i.size ?? null, img: p.images?.[0] || null
     };
   });
+  
 
   const subtotal = lines.reduce((s,l)=>s + l.price * l.qty, 0);        // precios YA con IVA
   const { discountCode:disc, discountAmount } = applyDiscount(subtotal, discountCode);
@@ -81,14 +124,6 @@ exports.summary = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// helper para extraer email de "Name <mail@dom>" si usas FROM_EMAIL
-const pickEmail = (s='') => {
-  const m = String(s).match(/<([^>]+)>/);
-  if (m) return m[1].trim();
-  if (s.includes('@')) return s.trim();
-  return '';
-};
-
 exports.finalize = async (req, res, next) => {
   try {
     const input = summarySchema.parse(req.body);
@@ -105,46 +140,69 @@ exports.finalize = async (req, res, next) => {
     const receiptUrl = `${base}/receipts/${filename}`;
     await Order.findByIdAndUpdate(order._id, { receiptPath: filename });
 
-    // ===== Enlaces preparados =====
+    // Un solo origen para mensajes/enlaces
+    const { buyer, vendor, waVendor } = buildComms(order.toObject(), receiptUrl);
+
+    // mailto Fallbacks (por si en Thanks falla el envío real)
     const buyerEmail  = order.buyer?.email || '';
-    const vendorEmail = process.env.VENDOR_EMAIL || pickEmail(process.env.FROM_EMAIL || '');
-
-    const subjBuyer = 'Tu recibo — BYE K1TTY';
-    const bodyBuyer = [
-      '¡Gracias por tu compra en BYE K1TTY!',
-      `Total: €${s.total.toFixed(2)}`,
-      `Recibo (PDF): ${receiptUrl}`,
-      'Cupón -5%: BK5'
-    ].join('\n');
-
-    const subjVendor = `Nuevo pedido Bizum — ${String(order._id).slice(-8)}`;
-    const bodyVendor = [
-      `Pedido: ${String(order._id)}`,
-      `Comprador: ${order.buyer.fullName} (${order.buyer.phone})`,
-      `Total: €${s.total.toFixed(2)}`,
-      `Recibo: ${receiptUrl}`
-    ].join('\n');
-
-    const mailtoBuyer  = buyerEmail  ? `mailto:${encodeURIComponent(buyerEmail)}?subject=${encodeURIComponent(subjBuyer)}&body=${encodeURIComponent(bodyBuyer)}` : null;
-    const mailtoVendor = vendorEmail ? `mailto:${encodeURIComponent(vendorEmail)}?subject=${encodeURIComponent(subjVendor)}&body=${encodeURIComponent(bodyVendor)}` : null;
-
-    const vendor = (process.env.VENDOR_WHATSAPP_NUMBER || '').replace(/^\+/, '');
-    const waVendor = vendor
-      ? `https://wa.me/${vendor}?text=${encodeURIComponent(`Nuevo pedido Bizum:
-      Cliente: ${order.buyer.fullName} (${order.buyer.phone})
-      Total: €${order.total.toFixed(2)}
-      Recibo: ${receiptUrl}`)}`
-      : null;
+    const vendorEmail = process.env.VENDOR_EMAIL || '';
+    const mailtoBuyer  = buyerEmail  ? `mailto:${encodeURIComponent(buyerEmail)}?subject=${encodeURIComponent(buyer.subject)}&body=${encodeURIComponent(buyer.text)}`: null;
+    const mailtoVendor = vendorEmail ? `mailto:${encodeURIComponent(vendorEmail)}?subject=${encodeURIComponent(vendor.subject)}&body=${encodeURIComponent(vendor.text)}`: null;
 
     return res.json({
       ok: true,
       orderId: order._id,
       receiptUrl,
-      share: {
-        mailtoBuyer,     // para enviar al comprador (desde Thanks)
-        mailtoVendor,    // para notificar al vendedor
-        waVendor         // click-to-chat con texto prellenado
-      }
+      share: { mailtoBuyer, mailtoVendor, waVendor }
     });
+  } catch (e) { next(e); }
+};
+
+exports.emailBuyer = async (req, res, next) => {
+  try {
+    const { orderId } = z.object({ orderId: z.string().min(8) }).parse(req.body);
+    const order = await Order.findById(orderId).lean();
+    if (!order) throw Object.assign(new Error('order_not_found'), { status:404 });
+
+    const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
+    const file = order.receiptPath ? path.join(outDir, order.receiptPath) : null;
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/receipts/${order.receiptPath}`;
+    const { buyer } = buildComms(order, receiptUrl);
+
+    await sendMail({
+      to: order.buyer.email,
+      subject: buyer.subject,
+      text: buyer.text,
+      attachments: file ? [{ filename: `recibo_${order._id}.pdf`, path: file }] : []
+    });
+
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+};
+
+exports.emailVendor = async (req, res, next) => {
+  try {
+    const { orderId } = z.object({ orderId: z.string().min(8) }).parse(req.body);
+    const order = await Order.findById(orderId).lean();
+    if (!order) throw Object.assign(new Error('order_not_found'), { status:404 });
+
+    const vendorEmail = process.env.VENDOR_EMAIL || '';
+    if (!vendorEmail) throw Object.assign(new Error('vendor_email_missing'), { status:400 });
+
+    const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
+    const file = order.receiptPath ? path.join(outDir, order.receiptPath) : null;
+    const base = `${req.protocol}://${req.get('host')}`;
+    const receiptUrl = `${base}/receipts/${order.receiptPath}`;
+    const { vendor } = buildComms(order, receiptUrl);
+
+    await sendMail({
+      to: vendorEmail,
+      subject: vendor.subject,
+      text: vendor.text,
+      attachments: file ? [{ filename: `recibo_${order._id}.pdf`, path: file }] : []
+    });
+
+    res.json({ ok: true });
   } catch (e) { next(e); }
 };

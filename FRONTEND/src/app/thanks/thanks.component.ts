@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CheckoutService } from '../services/checkout.service';
 
 @Component({
   standalone: true,
@@ -10,31 +11,53 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./thanks.component.scss']
 })
 export class ThanksComponent {
-    private route = inject(ActivatedRoute);
-    private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private api    = inject(CheckoutService);
 
-    receiptUrl   = signal<string | null>(null);
-    mailtoBuyer  = signal<string | null>(null);
-    mailtoVendor = signal<string | null>(null);
-    waVendor     = signal<string | null>(null);
+  oid          = signal<string | null>(null);
+  receiptUrl   = signal<string | null>(null);
+  mailtoBuyer  = signal<string | null>(null);
+  mailtoVendor = signal<string | null>(null);
+  waVendor     = signal<string | null>(null);
 
-    constructor() {
-        const qp = this.route.snapshot.queryParamMap;
+  sendingBuyer  = signal(false);
+  sendingVendor = signal(false);
 
-        const safeDecode = (v: string | null) => {
-        if (!v) return null;
-        try { return decodeURIComponent(v); } catch { return v; }
-        };
+  constructor() {
+    const qp = this.route.snapshot.queryParamMap;
+    const val = (k:string) => qp.get(k);
 
-        this.receiptUrl.set(safeDecode(qp.get('r')));
-        this.mailtoBuyer.set(safeDecode(qp.get('mb')));
-        this.mailtoVendor.set(safeDecode(qp.get('mv')));
-        this.waVendor.set(safeDecode(qp.get('wav')));
-    }
+    this.oid.set(val('oid'));
+    this.receiptUrl.set(val('r'));
+    this.mailtoBuyer.set(val('mb'));
+    this.mailtoVendor.set(val('mv'));
+    this.waVendor.set(val('wav'));
+  }
 
-    openPdf(){ const u = this.receiptUrl(); if (u) window.open(u, '_blank'); }
-    sendEmailBuyer(){ const m = this.mailtoBuyer(); if (m) window.location.href = m; }
-    sendWhatsAppVendor(){ const w = this.waVendor(); if (w) window.open(w, '_blank'); }
-    notifyVendorEmail(){ const m = this.mailtoVendor(); if (m) window.location.href = m; }
-    backToShop(){ this.router.navigate(['/'], { fragment: 'shopTop' }); }
+  openPdf(){ const u = this.receiptUrl(); if (u) window.open(u, '_blank'); }
+
+  sendEmailBuyer(){
+    const id = this.oid(); if (!id) return;
+    this.sendingBuyer.set(true);
+    this.api.emailBuyer(id).subscribe({
+      next: () => alert('Recibo enviado a tu email.'),
+      error: () => { const m = this.mailtoBuyer(); if (m) window.location.href = m; },
+      complete: () => this.sendingBuyer.set(false)
+    });
+  }
+
+  sendWhatsAppVendor(){ const w = this.waVendor(); if (w) window.open(w, '_blank'); }
+
+  notifyVendorEmail(){
+    const id = this.oid(); if (!id) return;
+    this.sendingVendor.set(true);
+    this.api.emailVendor(id).subscribe({
+      next: () => alert('Notificación enviada al vendedor.'),
+      error: () => { const m = this.mailtoVendor(); if (m) window.location.href = m; },
+      complete: () => this.sendingVendor.set(false)
+    });
+  }
+
+  backToShop(){ this.router.navigate(['/'], { fragment: 'shopTop' }); }
 }
