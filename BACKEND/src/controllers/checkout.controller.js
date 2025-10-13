@@ -5,7 +5,14 @@ const { quoteOptions } = require('../utils/shipping');
 const path = require('path');
 const { generateReceiptPDF } = require('../utils/pdf');
 const { sendMail, hasSMTP } = require('../utils/email');
-const pickEmail = s => (String(s).match(/<([^>]+)>/)?.[1] || (s.includes('@') ? s.trim() : ''));
+
+// extrae email de 'Nombre <mail@dominio>'
+const pickEmail = (s='') => {
+  const m = String(s).match(/<([^>]+)>/);
+  if (m) return m[1].trim();
+  if (s.includes('@')) return s.trim();
+  return '';
+};
 
 const itemSchema = z.object({ id: z.string(), qty: z.number().min(1), size: z.string().min(1).nullable().optional() });
 const buyerSchema = z.object({
@@ -158,12 +165,9 @@ exports.finalize = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-exports.emailBuyer = async (req, res, next) => {
+exports.emailBuyer = async (req, res) => {
   try {
-    if (!hasSMTP()) {
-      return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
-    }
-
+    if (!hasSMTP()) return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
     const { orderId } = req.body || {};
     if (!orderId) return res.status(400).json({ ok:false, code:'order_id_missing' });
 
@@ -174,6 +178,7 @@ exports.emailBuyer = async (req, res, next) => {
     if (!to) return res.status(400).json({ ok:false, code:'buyer_email_missing' });
 
     const base = `${req.protocol}://${req.get('host')}`;
+    const filename = order.receiptPath ? path.basename(order.receiptPath) : null;
     const receiptUrl = order.receiptPath ? `${base}/receipts/${order.receiptPath}` : null;
 
     const subject = 'Tu recibo — BYE K1TTY';
@@ -181,55 +186,57 @@ exports.emailBuyer = async (req, res, next) => {
       '¡Gracias por tu compra en BYE K1TTY!',
       `Total: €${Number(order.total).toFixed(2)}`,
       'Adjuntamos tu recibo en PDF.',
-      'Si tienes cualquier duda, responde a este correo.',
+      'Si tienes cualquier duda, responde a este correo.'
     ].join('\n');
 
     await sendMail({
-      to,
-      subject,
-      text,
-      attachments: receiptUrl
-        ? [{ filename: path.basename(order.receiptPath), path: receiptUrl, contentType:'application/pdf' }]
-        : []
+      to, subject, text,
+      attachments: receiptUrl ? [{ filename, path: receiptUrl, contentType:'application/pdf' }] : []
     });
 
     return res.json({ ok:true });
   } catch (e) {
-    // Si viene del transporter sin SMTP configurado, asegúrate del 400:
-    if (e.code === 'email_service_unconfigured') {
+    if (e.code === 'email_service_unconfigured')
       return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
-    }
     console.error('[emailBuyer]', e);
     return res.status(500).json({ ok:false, code:'email_send_failed' });
   }
 };
 
-exports.emailVendor = async (req,res,next)=>{
-  try{
-    const to = req.body?.to || process.env.VENDOR_EMAIL || pickEmail(process.env.FROM_EMAIL || '');
-    if (!to) return res.status(400).json({ ok:false, code:'vendor_email_missing' });
-
+exports.emailVendor = async (req, res) => {
+  try {
     if (!hasSMTP()) return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
-
     const { orderId } = req.body || {};
+    if (!orderId) return res.status(400).json({ ok:false, code:'order_id_missing' });
+
     const order = await Order.findById(orderId).lean();
     if (!order) return res.status(404).json({ ok:false, code:'order_not_found' });
 
+    const vendorEmail = process.env.VENDOR_EMAIL || pickEmail(process.env.FROM_EMAIL || '');
+    if (!vendorEmail) return res.status(400).json({ ok:false, code:'vendor_email_missing' });
+
     const base = `${req.protocol}://${req.get('host')}`;
+    const filename = order.receiptPath ? path.basename(order.receiptPath) : null;
     const receiptUrl = order.receiptPath ? `${base}/receipts/${order.receiptPath}` : null;
 
+    const subject = `Nuevo pedido Bizum — ${String(order._id).slice(-8)}`;
+    const text = [
+      `Pedido: ${order._id}`,
+      `Comprador: ${order.buyer?.fullName} (${order.buyer?.phone})`,
+      `Total: €${Number(order.total).toFixed(2)}`,
+      'Adjuntamos recibo en PDF.'
+    ].join('\n');
+
     await sendMail({
-      to,
-      subject: `Nuevo pedido Bizum — ${String(order._id).slice(-8)}`,
-      text: [
-        `Pedido: ${order._id}`,
-        `Comprador: ${order.buyer.fullName} (${order.buyer.phone})`,
-        `Total: €${order.total.toFixed(2)}`,
-        `Recibo: ${receiptUrl}`
-      ].join('\n'),
-      attachments: receiptUrl ? [{ filename: path.basename(order.receiptPath), path: receiptUrl, contentType:'application/pdf' }] : []
+      to: vendorEmail, subject, text,
+      attachments: receiptUrl ? [{ filename, path: receiptUrl, contentType:'application/pdf' }] : []
     });
 
-    res.json({ ok:true });
-  }catch(e){ next(e); }
+    return res.json({ ok:true });
+  } catch (e) {
+    if (e.code === 'email_service_unconfigured')
+      return res.status(400).json({ ok:false, code:'email_service_unconfigured' });
+    console.error('[emailVendor]', e);
+    return res.status(500).json({ ok:false, code:'email_send_failed' });
+  }
 };

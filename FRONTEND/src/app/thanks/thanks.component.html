@@ -20,8 +20,8 @@
       <ol class="steps">
         <!-- PASO 1 -->
         <li class="step">
-          <h4>Paso 1 · Abre y revisa tu recibo</h4>
-          <p>Comprueba tus datos, artículos y total. Si ves algo incorrecto, vuelve atrás y edítalo.</p>
+          <h4>Paso 1 · Abre, revisa tu recibo y descargalo.</h4>
+          <p>Comprueba tus datos, artículos y total. Si ves algo incorrecto, vuelve atrás y edítalo. Si todo es correcto, descargalo y usalo en el Paso 3.</p>
           <div class="actions">
             <button class="apply" (click)="openPdf()" [disabled]="!receiptUrl()">
               Abrir recibo (PDF)
@@ -45,8 +45,11 @@
 
         <!-- PASO 3 -->
         <li class="step">
-          <h4>Paso 3 · Notifica al vendedor</h4>
-          <p>Le enviaremos el mismo recibo por email (con el PDF adjunto) para preparar tu pedido.</p>
+          <h4>Paso 3 · Notifica al vendedor, Confirma y paga por WhatsApp</h4>
+          <p>Envía mensaje de notificación por email (con el recibo en PDF adjunto) para preparar tu pedido.</p>
+          <p>Luego envía WhatsApp con el mensaje prellenado para confirmar el pedido y realizar el pago por Bizum. 
+            Adjunta el recibo descargado en el Paso 1 y envia el mensaje.
+          </p>
           <div class="actions">
             <button class="ghost"
                     (click)="notifyVendorEmail()"
@@ -54,17 +57,10 @@
               <span *ngIf="!sendingVendor()">Notificar por email al vendedor</span>
               <span *ngIf="sendingVendor()">Enviando…</span>
             </button>
-          </div>
-        </li>
-
-        <!-- PASO 4 -->
-        <li class="step">
-          <h4>Paso 4 · Confirma y paga por WhatsApp</h4>
-          <p>Se abrirá WhatsApp con un mensaje prellenado para confirmar el pedido y realizar el pago por Bizum.</p>
-          <div class="actions">
-            <button class="apply" (click)="sendWhatsAppVendor()" *ngIf="waVendor()" [href]="waVendor()!" target="_blank" rel="noopener">
+            <!-- Enlace “botón” (recomendado) -->
+            <a *ngIf="waHref()" class="apply" [href]="waHref()!" target="_blank" rel="noopener">
               Abrir WhatsApp para pagar
-            </button>
+            </a>
           </div>
         </li>
       </ol>
