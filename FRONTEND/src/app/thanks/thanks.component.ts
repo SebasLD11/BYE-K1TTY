@@ -26,13 +26,26 @@ export class ThanksComponent {
     this.oid.set(v('oid'));
     this.receiptUrl.set(v('r'));
 
-    // admite ?wav=... (y por compatibilidad ?wa=...)
-    const w = v('wav') || v('wa') || '';
-    this.waVendor.set(w);
+    const raw = v('wav') || v('wa') || '';
 
-    // normaliza wa.me → api.whatsapp.com
-    const m = (w || '').match(/^https:\/\/wa\.me\/(\d+)\?text=(.+)$/i);
-    this.waHref.set(m ? `https://api.whatsapp.com/send?phone=${m[1]}&text=${m[2]}` : (w || null));
+    // Solo aceptamos dominios esperados y normalizamos wa.me → api.whatsapp.com
+    const safe = (() => {
+      if (!raw) return null;
+      try {
+        const u = new URL(raw);
+        const host = u.host.toLowerCase();
+        if (host === 'wa.me') {
+          // wa.me/<digits>?text=...
+          const m = raw.match(/^https:\/\/wa\.me\/(\d+)\?text=(.+)$/i);
+          return m ? `https://api.whatsapp.com/send?phone=${m[1]}&text=${m[2]}` : null;
+        }
+        if (host === 'api.whatsapp.com') return raw;
+        return null; // rechazamos otros hosts
+      } catch { return null; }
+    })();
+
+    this.waVendor.set(raw || null);
+    this.waHref.set(safe);
   }
 
   openPdf() {

@@ -30,9 +30,19 @@
           <h4>Paso 2 · Confirma y paga por WhatsApp</h4>
           <p>Se abrirá WhatsApp con un mensaje prellenado para confirmar el pedido y pagar por Bizum. Adjunta el PDF descargado en el Paso 1.</p>
           <div class="actions">
-            <a *ngIf="waHref()" class="apply" [href]="waHref()!" target="_self" rel="noopener">
+            <a *ngIf="waHref(); else waMissing"
+              class="apply"
+              [href]="waHref()!"
+              target="_self"
+              rel="noopener">
               Abrir WhatsApp para pagar
             </a>
+            <ng-template #waMissing>
+              <button class="apply" disabled title="Configurar WhatsApp del vendedor">
+                Abrir WhatsApp para pagar (no disponible)
+              </button>
+              <p class="warn">No se ha podido generar el enlace de WhatsApp. Contacta con soporte o revisa tu número de vendedor.</p>
+            </ng-template>
           </div>
         </li>
       </ol>
