@@ -1,3 +1,4 @@
+// src/app/thanks/thanks.component.ts
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -20,17 +21,18 @@ export class ThanksComponent {
 
   constructor() {
     const qp = this.route.snapshot.queryParamMap;
-    const v = (k:string) => qp.get(k);
+    const v  = (k:string) => qp.get(k) || null;
 
     this.oid.set(v('oid'));
     this.receiptUrl.set(v('r'));
 
-    const w = v('wav') || '';
+    // admite ?wav=... (y por compatibilidad ?wa=...)
+    const w = v('wav') || v('wa') || '';
     this.waVendor.set(w);
 
     // normaliza wa.me → api.whatsapp.com
-    const m = w.match(/^https:\/\/wa\.me\/(\d+)\?text=(.+)$/i);
-    this.waHref.set(m ? `https://api.whatsapp.com/send?phone=${m[1]}&text=${m[2]}` : w || null);
+    const m = (w || '').match(/^https:\/\/wa\.me\/(\d+)\?text=(.+)$/i);
+    this.waHref.set(m ? `https://api.whatsapp.com/send?phone=${m[1]}&text=${m[2]}` : (w || null));
   }
 
   openPdf() {
@@ -38,10 +40,9 @@ export class ThanksComponent {
     if (u) window.open(u, '_blank');
   }
 
-  // (mejor compatibilidad móvil: abre en la misma pestaña si quieres)
   openWhatsApp() {
     const u = this.waHref();
-    if (u) window.location.href = u;
+    if (u) window.location.href = u; // mismo tab = menos bloqueos popup
   }
 
   backToShop(){ this.router.navigate(['/'], { fragment: 'shopTop' }); }

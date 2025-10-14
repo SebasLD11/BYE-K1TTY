@@ -1,3 +1,4 @@
+<!-- src/app/thanks/thanks.component.html -->
 <section class="thanks container">
   <header class="head">
     <h2>¡Gracias por tu compra!</h2>
@@ -6,7 +7,6 @@
 
   <article class="card">
     <div class="section">
-      <!-- Info recibo -->
       <div class="info">
         <p class="muted" *ngIf="receiptUrl(); else missing">
           Recibo: <a [href]="receiptUrl()!" target="_blank" rel="noopener">abrir PDF</a>
@@ -17,7 +17,6 @@
       </div>
 
       <ol class="steps">
-        <!-- PASO 1 -->
         <li class="step">
           <h4>Paso 1 · Abre y descarga tu recibo</h4>
           <p>Comprueba tus datos, artículos y total. Si todo está correcto, descárgalo para adjuntarlo en WhatsApp.</p>
@@ -27,7 +26,6 @@
           <p class="hint">Si no se descarga automáticamente, usa el botón “descargar” del visor.</p>
         </li>
 
-        <!-- PASO 2 -->
         <li class="step">
           <h4>Paso 2 · Confirma y paga por WhatsApp</h4>
           <p>Se abrirá WhatsApp con un mensaje prellenado para confirmar el pedido y pagar por Bizum. Adjunta el PDF descargado en el Paso 1.</p>

@@ -9,6 +9,14 @@ export interface Buyer{
 }
 export interface ShippingSel{ carrier:string; service:string; zone:string; cost:number; }
 
+export interface FinalizeResponse {
+  ok: true;
+  orderId: string;
+  receiptUrl: string;
+  waVendor?: string;
+  share?: { waVendor?: string };
+}
+
 @Injectable({ providedIn: 'root' })
 export class CheckoutService {
   private http = inject(HttpClient);
@@ -17,9 +25,13 @@ export class CheckoutService {
   summary(payload: { items: CheckoutItem[]; buyer: Buyer; discountCode?: string|null }) {
     return this.http.post<any>(`${this.base}/api/pay/summary`, payload);
   }
-  finalize(payload: { orderId?: string; items: CheckoutItem[]; buyer: Buyer; discountCode?: string|null; shipping: ShippingSel }) {
-    return this.http.post<{ ok:true; orderId:string; receiptUrl:string; share?:{ waVendor?:string } }>(
-      `${this.base}/api/pay/finalize`, payload
-    );
+  finalize(payload: {
+    orderId?: string;
+    items: CheckoutItem[];
+    buyer: Buyer;
+    discountCode?: string|null;
+    shipping: ShippingSel
+  }) {
+    return this.http.post<FinalizeResponse>(`${this.base}/api/pay/finalize`, payload);
   }
 }

@@ -1,4 +1,4 @@
-// controllers/checkout.controller.js
+// src/controllers/checkout.controller.js
 const { z } = require('zod');
 const path = require('path');
 const Order = require('../models/Order');
@@ -10,11 +10,11 @@ const { generateReceiptPDF } = require('../utils/pdf');
 const itemSchema = z.object({
   id: z.string(),
   qty: z.number().min(1),
-  size: z.string().min(1).nullable().optional()
+  size: z.string().min(1).nullable().optional(),
 });
 const buyerSchema = z.object({
   fullName: z.string().min(2),
-  email: z.email(),       
+  email: z.email(),            // helper que evita el warning de deprecación
   phone: z.string().min(6),
   line1: z.string().min(3),
   line2: z.string().optional().nullable(),
@@ -31,7 +31,7 @@ const summarySchema = z.object({
     carrier: z.string(),
     service: z.string(),
     zone: z.string(),
-    cost: z.number().nonnegative()
+    cost: z.number().nonnegative(),
   }).optional(),
 });
 
@@ -39,7 +39,7 @@ const summarySchema = z.object({
 function applyDiscount(subtotal, code) {
   const normalized = String(code || '').trim().toUpperCase();
   if (!normalized) return { discountCode: null, discountAmount: 0 };
-  if (['BK10','BYE10','DISCOUNT10'].includes(normalized)) {
+  if (['BK10', 'BYE10', 'DISCOUNT10'].includes(normalized)) {
     return { discountCode: normalized, discountAmount: +(subtotal * 0.09).toFixed(2) };
   }
   return { discountCode: normalized, discountAmount: 0 };
@@ -52,7 +52,7 @@ function waLinkForVendor(number, order, receiptUrl) {
     'Nuevo pedido Bizum:',
     `Cliente: ${order?.buyer?.fullName || ''} (${order?.buyer?.phone || ''})`,
     `Total: €${(order?.total || 0).toFixed(2)}`,
-    `Recibo: ${receiptUrl}`
+    `Recibo: ${receiptUrl}`,
   ].join('\n');
   const qs = new URLSearchParams({ text }).toString();
   return `https://wa.me/${digits}?${qs}`;
@@ -74,17 +74,19 @@ async function buildSummary({ items, buyer, discountCode, shipping }) {
       price: Number(p.price),
       qty: Math.max(1, Number(i.qty || 1)),
       size: i.size ?? null,
-      img: p.images?.[0] || null
+      img: p.images?.[0] || null,
     };
   });
 
-  const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0); // precios YA con IVA
+  // precios base YA incluyen IVA
+  const subtotal = lines.reduce((s, l) => s + l.price * l.qty, 0);
   const { discountCode: disc, discountAmount } = applyDiscount(subtotal, discountCode);
 
   const vatRate = Number(process.env.DEFAULT_VAT_RATE || 0.21);
   const baseGross = +(subtotal - discountAmount).toFixed(2); // bruto con IVA
-  const vatAmount = +((baseGross) - (baseGross / (1 + vatRate))).toFixed(2); // informativo
+  const vatAmount = +((baseGross) - (baseGross / (1 + vatRate))).toFixed(2); // informativo (IVA incluido)
 
+  // Envío
   const FREE_SHIPPING = Number(process.env.FREE_SHIPPING_THRESHOLD || 100);
   let shippingOptions = [];
   let shippingSel = shipping || null;
@@ -96,7 +98,7 @@ async function buildSummary({ items, buyer, discountCode, shipping }) {
   }
 
   const shippingCost = shippingSel?.cost || 0;
-  const total = +(baseGross + shippingCost).toFixed(2); // no sumamos IVA
+  const total = +(baseGross + shippingCost).toFixed(2); // NO sumamos IVA de nuevo
 
   return {
     items: lines,
@@ -108,7 +110,7 @@ async function buildSummary({ items, buyer, discountCode, shipping }) {
     shipping: shippingSel,
     buyer,
     total,
-    shippingOptions
+    shippingOptions,
   };
 }
 
@@ -119,7 +121,9 @@ exports.summary = async (req, res, next) => {
     const s = await buildSummary(input);
     const order = await Order.create({ ...s, status: 'review' });
     return res.json({ orderId: order._id, ...s, shippingOptions: s.shippingOptions });
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
 
 exports.finalize = async (req, res, next) => {
@@ -131,25 +135,30 @@ exports.finalize = async (req, res, next) => {
       ? await Order.findByIdAndUpdate(req.body.orderId, { ...s, status: 'awaiting_payment' }, { new: true })
       : await Order.create({ ...s, status: 'awaiting_payment' });
 
-    // PDF
+    // Genera PDF
     const outDir = process.env.RECEIPTS_DIR || path.join(__dirname, '../../uploads/receipts');
     const { filename } = await generateReceiptPDF(order.toObject(), {
       outDir,
-      brandLogoUrl: process.env.BRAND_LOGO_URL
+      brandLogoUrl: process.env.BRAND_LOGO_URL,
     });
 
+    // URL absoluta al PDF
     const base = `${req.protocol}://${req.get('host')}`;
     const receiptUrl = `${base}/receipts/${filename}`;
     await Order.findByIdAndUpdate(order._id, { receiptPath: filename });
 
-    // Solo WhatsApp para el flujo 2 pasos
+    // Link de WhatsApp para el flujo de 2 pasos
     const waVendor = waLinkForVendor(process.env.VENDOR_WHATSAPP_NUMBER, order.toObject(), receiptUrl);
 
+    // Devolvemos waVendor duplicado: raíz + share (compatibilidad hacia atrás)
     return res.json({
       ok: true,
       orderId: order._id,
       receiptUrl,
-      share: { waVendor }
+      waVendor,
+      share: { waVendor },
     });
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 };
