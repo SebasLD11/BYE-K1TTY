@@ -1,11 +1,11 @@
-// utils/pdf.js
+// src/utils/pdf.js
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
 async function bufferFromUrl(url){
-  const r = await axios.get(url, { responseType: 'arraybuffer' });
+  const r = await axios.get(url,{ responseType:'arraybuffer' });
   return Buffer.from(r.data);
 }
 
@@ -14,143 +14,170 @@ async function generateReceiptPDF(order, { outDir, brandLogoUrl }) {
   const fullPath = path.join(outDir, filename);
   await fs.promises.mkdir(outDir, { recursive: true });
 
-  const doc = new PDFDocument({ size: 'A4', margin: 48 }); // margen algo mayor
+  const doc = new PDFDocument({ size:'A4', margin:40 });
   const stream = fs.createWriteStream(fullPath);
   doc.pipe(stream);
 
-  // === Helpers ===
+  // === Helpers comunes
+  const pageW = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   const L = doc.page.margins.left;
-  const W = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-  const R = L + W;
-  const gutter = 14;
+  const R = L + pageW;
 
-  const line = (y) => {
-    doc.moveTo(L, y).lineTo(R, y).strokeColor('#e5e7eb').lineWidth(1).stroke();
-  };
+  const Y = (val) => { doc.y = val; return val; };
+  const line = (y) => { doc.moveTo(L, y).lineTo(R, y).strokeColor('#ddd').lineWidth(1).stroke(); };
+  const textRight = (txt, x, y, w) => doc.text(txt, x, y, { width:w, align:'right' });
+  const textCenter= (txt, x, y, w) => doc.text(txt, x, y, { width:w, align:'center' });
 
-  // === Cabecera ===
-  let y = 48;
+  // === Cabecera
+  let yCursor = 40;
   if (brandLogoUrl) {
-    try { doc.image(await bufferFromUrl(brandLogoUrl), L, y, { width: 120 }); } catch {}
+    try { doc.image(await bufferFromUrl(brandLogoUrl), L, yCursor, { width: 120 }); }
+    catch {}
   }
-  doc.font('Helvetica-Bold').fontSize(18).text('RECIBO', R - 140, y, { width: 140, align: 'right' });
+  doc.font('Helvetica-Bold').fontSize(18).text('RECIBO', R - 120, yCursor, { width:120, align:'right' });
+  yCursor += 40; // baja un poco tras la cabecera
 
-  // === Bloques superiores en 3 columnas (sin solapes) ===
-  y += 36;
-  const colW = (W - gutter * 2) / 3;
-  const yTop = y;
+  // === Bloques superiores (3 columnas): Vendedor / Pedido / Comprador
+  doc.fontSize(10);
+
+  const col1x = L;
+  const col2x = L + pageW * 0.40;
+  const col3x = L + pageW * 0.68;
+  const col1w = pageW * 0.37;
+  const col2w = pageW * 0.25;
+  const col3w = pageW * 0.30;
+
+  const topY = Y(yCursor);
 
   // Vendedor
-  let y1 = yTop;
-  doc.font('Helvetica-Bold').fontSize(10).text('Vendedor:', L, y1, { width: colW });
-  doc.font('Helvetica').fontSize(10);
-  y1 = doc.text('BYE K1TTY — NIF/CIF: 48273903P', L, doc.y, { width: colW }).y;
-  y1 = doc.text('C/ Ripollès 87, La Mora, Tarragona, 43008', L, y1, { width: colW }).y;
-  y1 = doc.text('Email: aharonbj96@gmail.com · Tel: +34 634 183 862', L, y1, { width: colW }).y;
+  doc.font('Helvetica-Bold').text('Vendedor:', col1x, topY, { width: col1w });
+  doc.font('Helvetica').text('BYE K1TTY — NIF/CIF: 48273903P', col1x, doc.y, { width: col1w });
+  doc.text('C/Ripollès 87, La mora. Tarragona, 43008', col1x, doc.y, { width: col1w });
+  doc.text('Email: aharonbj96@gmail.com · Tel: +34 634 183 862', col1x, doc.y, { width: col1w });
+  const yVendEnd = doc.y;
 
   // Pedido
-  let y2 = yTop;
-  const x2 = L + colW + gutter;
-  doc.font('Helvetica-Bold').fontSize(10).text('Pedido', x2, y2, { width: colW });
-  doc.font('Helvetica').fontSize(10);
-  y2 = doc.text(`Nº: ${order._id}`, x2, doc.y, { width: colW }).y;
-  const created = new Date(order.createdAt || Date.now());
-  y2 = doc.text(`Fecha: ${created.toLocaleDateString('es-ES')}`, x2, y2, { width: colW }).y;
+  doc.font('Helvetica-Bold').text('Pedido', col2x, topY, { width: col2w });
+  doc.font('Helvetica').text(`Nº: ${order._id}`, col2x, doc.y, { width: col2w });
+  doc.text(`Fecha: ${new Date(order.createdAt || Date.now()).toLocaleDateString('es-ES')}`, col2x, doc.y, { width: col2w });
+  const yPedEnd = doc.y;
 
   // Comprador
-  let y3 = yTop;
-  const x3 = x2 + colW + gutter;
-  doc.font('Helvetica-Bold').fontSize(10).text('Comprador', x3, y3, { width: colW });
-  doc.font('Helvetica').fontSize(10);
   const b = order.buyer || {};
-  y3 = doc.text(`${b.fullName || ''}`, x3, doc.y, { width: colW }).y;
-  y3 = doc.text(`${b.email || ''} — ${b.phone || ''}`, x3, y3, { width: colW }).y;
-  y3 = doc.text(`${b.line1 || ''} ${b.line2 || ''}`, x3, y3, { width: colW }).y;
-  y3 = doc.text(`${b.postalCode || ''} ${b.city || ''} (${b.province || ''})`, x3, y3, { width: colW }).y;
+  doc.font('Helvetica-Bold').text('Comprador', col3x, topY, { width: col3w });
+  doc.font('Helvetica').text(`${b.fullName || ''}`, col3x, doc.y, { width: col3w });
+  doc.text(`${b.email || ''} — ${b.phone || ''}`, col3x, doc.y, { width: col3w });
+  doc.text(`${b.line1 || ''} ${b.line2 || ''}`, col3x, doc.y, { width: col3w });
+  doc.text(`${b.postalCode || ''} ${b.city || ''} (${b.province || ''})`, col3x, doc.y, { width: col3w });
+  const yCompEnd = doc.y;
 
-  y = Math.max(y1, y2, y3) + 14;
+  // Cierra el bloque superior sin solapar
+  yCursor = Math.max(yVendEnd, yPedEnd, yCompEnd) + 16;
+  Y(yCursor);
 
   // Envío
-  doc.font('Helvetica-Bold').fontSize(10).text('Envío', L, y);
-  doc.font('Helvetica').fontSize(10);
-  y = doc.text(`${order.shipping?.carrier || '—'} — ${order.shipping?.service || '—'}`, L, doc.y, { width: W }).y;
-  if (order.shipping?.zone) y = doc.text(`Zona: ${order.shipping.zone}`, L, y, { width: W }).y;
+  doc.font('Helvetica-Bold').text('Envío', L, yCursor);
+  doc.font('Helvetica').text(`${order.shipping?.carrier || '—'} — ${order.shipping?.service || '—'}`, L, doc.y);
+  if (order.shipping?.zone) doc.text(`Zona: ${order.shipping.zone}`, L, doc.y);
+  yCursor = doc.y + 12;
+  Y(yCursor);
 
-  // === Tabla de artículos ===
-  y += 10; line(y); y += 8;
+  // === Tabla artículos
+  line(doc.y); Y(doc.y + 8);
 
-  // Columnas (sumar 1.00)
-  const wProd  = W * 0.54;
-  const wQty   = W * 0.10;
-  const wPrice = W * 0.16;
-  const wAmt   = W * 0.20;
-  const xProd = L, xQty = xProd + wProd, xPrice = xQty + wQty, xAmt = xPrice + wPrice;
+  // Columnas tabla
+  const xProd = L;
+  const wProd = Math.floor(pageW * 0.52);     // producto (multi-línea)
+  const xQty  = L + Math.floor(pageW * 0.54);
+  const wQty  = Math.floor(pageW * 0.08);     // cantidad
+  const xPrice= L + Math.floor(pageW * 0.66);
+  const wPrice= Math.floor(pageW * 0.14);     // precio unit.
+  const xAmt  = L + Math.floor(pageW * 0.82);
+  const wAmt  = Math.floor(pageW * 0.18);     // importe
 
-  doc.font('Helvetica-Bold').fontSize(10);
-  doc.text('Producto', xProd, y, { width: wProd });
-  doc.text('Cant.',   xQty,  y, { width: wQty, align: 'center' });
-  doc.text('Precio',  xPrice,y, { width: wPrice, align: 'right' });
-  doc.text('Importe', xAmt,  y, { width: wAmt, align: 'right' });
+  // Encabezados
+  doc.font('Helvetica-Bold');
+  const headerY = doc.y;
+  doc.text('Producto', xProd, headerY, { width: wProd });
+  textCenter('Cant.', xQty, headerY, wQty);
+  textRight('Precio', xPrice, headerY, wPrice);
+  textRight('Importe', xAmt, headerY, wAmt);
 
-  y += 12; line(y); y += 6; doc.font('Helvetica').fontSize(10);
+  Y(headerY + 12);
+  line(doc.y); Y(doc.y + 6);
+  doc.font('Helvetica');
 
-  const rowGap = 6;
-  for (const it of order.items || []) {
+  // Filas
+  for (const it of (order.items || [])) {
     const name = it.size ? `${it.name} — Talla ${it.size}` : it.name;
+    const rowTop = doc.y;
 
-    // altura de la celda por el texto del producto
-    const hName = doc.heightOfString(name, { width: wProd, align: 'left' });
-    const rowH = Math.max(hName, doc.currentLineHeight());
+    // Calcula alto real de la celda de producto (multi-línea)
+    const hProd = doc.heightOfString(name, { width: wProd });
+    const hRow  = Math.max(hProd, 12); // al menos 1 línea
 
-    doc.text(name, xProd, y, { width: wProd });
-    doc.text(String(it.qty), xQty, y, { width: wQty, align: 'center' });
-    doc.text(`€${Number(it.price).toFixed(2)}`, xPrice, y, { width: wPrice, align: 'right' });
-    doc.text(`€${(Number(it.price) * Number(it.qty)).toFixed(2)}`, xAmt, y, { width: wAmt, align: 'right' });
+    // Escribe celdas alineadas al mismo y
+    doc.text(name, xProd, rowTop, { width: wProd });
+    textCenter(String(it.qty), xQty, rowTop, wQty);
+    textRight(`€${Number(it.price).toFixed(2)}`, xPrice, rowTop, wPrice);
+    textRight(`€${(Number(it.price) * Number(it.qty)).toFixed(2)}`, xAmt, rowTop, wAmt);
 
-    y += rowH + rowGap;
+    // Avanza a la siguiente fila
+    Y(rowTop + hRow + 6);
   }
 
-  y += 4; line(y); y += 10;
+  Y(doc.y + 4);
+  line(doc.y);
+  Y(doc.y + 10);
 
-  // Resumen (alineado derecha)
-  const colW = 180;
-  const colX = R - colW;
+  // === Resumen (bloque a la derecha, SIN redeclaraciones)
+  const sumW = 200;
+  const sumX = R - sumW;
 
   const subtotal = Number(order.subtotal || 0);
   const discount = Number(order.discountAmount || 0);
-  const vatAmt   = Number(order.vatAmount || 0); // informativo (IVA incl.)
+  const vatAmt   = Number(order.vatAmount || 0); // informativo (IVA incluido)
   const shipCost = Number(order.shipping?.cost || 0);
   const total    = Number(order.total || (subtotal - discount + shipCost));
 
-  doc.font('Helvetica').fontSize(10);
-  doc.text('Subtotal (IVA incl.)', colX, y, { width: colW/2 });
-  doc.text(`€${subtotal.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+  doc.font('Helvetica');
+  const lineGap = 12;
 
+  // Subtotal
+  doc.text('Subtotal (IVA incl.)', sumX, doc.y, { width: sumW / 2 });
+  textRight(`€${subtotal.toFixed(2)}`, sumX, doc.y, sumW);
+
+  // Descuento
   if (discount > 0) {
-    y += 12;
-    doc.text(`Descuento${order.discountCode ? ` (${order.discountCode})` : ''}`, colX, y, { width: colW/2 });
-    doc.text(`-€${discount.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+    Y(doc.y + lineGap);
+    doc.text(`Descuento${order.discountCode ? ` (${order.discountCode})` : ''}`, sumX, doc.y, { width: sumW / 2 });
+    textRight(`-€${discount.toFixed(2)}`, sumX, doc.y, sumW);
   }
 
-  y += 12;
-  doc.text('IVA (informativo)', colX, y, { width: colW/2 });
-  doc.text(`€${vatAmt.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+  // IVA informativo
+  Y(doc.y + lineGap);
+  doc.text('IVA (informativo)', sumX, doc.y, { width: sumW / 2 });
+  textRight(`€${vatAmt.toFixed(2)}`, sumX, doc.y, sumW);
 
+  // Envío
   if (order.shipping) {
-    y += 12;
-    doc.text('Envío', colX, y, { width: colW/2 });
-    doc.text(`€${shipCost.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+    Y(doc.y + lineGap);
+    doc.text('Envío', sumX, doc.y, { width: sumW / 2 });
+    textRight(`€${shipCost.toFixed(2)}`, sumX, doc.y, sumW);
   }
 
-  y += 14;
-  doc.font('Helvetica-Bold').text('Total', colX, y, { width: colW/2 });
-  doc.text(`€${total.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+  // Total (negrita)
+  Y(doc.y + lineGap + 2);
+  doc.font('Helvetica-Bold');
+  doc.text('Total', sumX, doc.y, { width: sumW / 2 });
+  textRight(`€${total.toFixed(2)}`, sumX, doc.y, sumW);
 
-  // Nota
-  y += 18; line(y); y += 10;
+  // Nota de pago
+  Y(doc.y + 18);
+  line(doc.y); Y(doc.y + 10);
   doc.font('Helvetica').fontSize(9).text(
     'Método de pago: Bizum pendiente de confirmación por el vendedor.\nGracias por tu compra. Cupón -10% para próxima compra: BK10',
-    L, y, { width: W }
+    L, doc.y, { width: pageW }
   );
 
   doc.end();
