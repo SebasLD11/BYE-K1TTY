@@ -1,7 +1,7 @@
 <section class="thanks container">
   <header class="head">
     <h2>¡Gracias por tu compra!</h2>
-    <p class="sub">Tu recibo está listo. Sigue estos pasos para completarlo.</p>
+    <p class="sub">Sigue estos dos pasos para completar tu pedido.</p>
   </header>
 
   <article class="card">
@@ -16,56 +16,29 @@
         </ng-template>
       </div>
 
-      <!-- Pasos -->
       <ol class="steps">
         <!-- PASO 1 -->
         <li class="step">
-          <h4>Paso 1 · Abre, revisa tu recibo y descargalo.</h4>
-          <p>Comprueba tus datos, artículos y total. Si ves algo incorrecto, vuelve atrás y edítalo. Si todo es correcto, descargalo y usalo en el Paso 3.</p>
+          <h4>Paso 1 · Abre y descarga tu recibo</h4>
+          <p>Comprueba tus datos, artículos y total. Si todo está correcto, descárgalo para adjuntarlo en WhatsApp.</p>
           <div class="actions">
-            <button class="apply" (click)="openPdf()" [disabled]="!receiptUrl()">
-              Abrir recibo (PDF)
-            </button>
+            <button class="apply" (click)="openPdf()" [disabled]="!receiptUrl()">Abrir recibo (PDF)</button>
           </div>
+          <p class="hint">Si no se descarga automáticamente, usa el botón “descargar” del visor.</p>
         </li>
 
         <!-- PASO 2 -->
         <li class="step">
-          <h4>Paso 2 · Recíbelo por email</h4>
-          <p>Te lo enviamos con el PDF adjunto a tu correo para que lo tengas guardado.</p>
+          <h4>Paso 2 · Confirma y paga por WhatsApp</h4>
+          <p>Se abrirá WhatsApp con un mensaje prellenado para confirmar el pedido y pagar por Bizum. Adjunta el PDF descargado en el Paso 1.</p>
           <div class="actions">
-            <button class="clear"
-                    (click)="sendEmailBuyer()"
-                    [disabled]="!oid() || sendingBuyer()">
-              <span *ngIf="!sendingBuyer()">Enviar a mi email</span>
-              <span *ngIf="sendingBuyer()">Enviando…</span>
-            </button>
-          </div>
-        </li>
-
-        <!-- PASO 3 -->
-        <li class="step">
-          <h4>Paso 3 · Notifica al vendedor, Confirma y paga por WhatsApp</h4>
-          <p>Envía mensaje de notificación por email (con el recibo en PDF adjunto) para preparar tu pedido.</p>
-          <p>Luego envía WhatsApp con el mensaje prellenado para confirmar el pedido y realizar el pago por Bizum. 
-            Adjunta el recibo descargado en el Paso 1 y envia el mensaje.
-          </p>
-          <div class="actions">
-            <button class="ghost"
-                    (click)="notifyVendorEmail()"
-                    [disabled]="!oid() || sendingVendor()">
-              <span *ngIf="!sendingVendor()">Notificar por email al vendedor</span>
-              <span *ngIf="sendingVendor()">Enviando…</span>
-            </button>
-            <!-- Enlace “botón” (recomendado) -->
-            <a *ngIf="waHref()" class="apply" [href]="waHref()!" target="_blank" rel="noopener">
+            <a *ngIf="waHref()" class="apply" [href]="waHref()!" target="_self" rel="noopener">
               Abrir WhatsApp para pagar
             </a>
           </div>
         </li>
       </ol>
 
-      <!-- Volver -->
       <div class="more">
         <button class="ghost" (click)="backToShop()">← Volver a la tienda</button>
       </div>

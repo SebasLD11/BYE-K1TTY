@@ -75,20 +75,17 @@ export class CheckoutSummaryComponent {
         this.loading.set(true);
 
         this.api.finalize({
-            orderId: id,
-            items: this.items(),
-            buyer,
-            discountCode: buyer.discountCode || null,
-            shipping: ship
+        orderId: id,
+        items: this.items(),
+        buyer,
+        discountCode: buyer.discountCode || null,
+        shipping: ship
         }).subscribe({
             next: ({ orderId, receiptUrl, share }) => {
                 this.cart.clear();
 
-                const params: Record<string, string> = { oid: orderId, r: receiptUrl };
-                if (share?.mailtoBuyer)  params['mb']  = share.mailtoBuyer;
-                if (share?.mailtoVendor) params['mv']  = share.mailtoVendor;
-                if (share?.waVendor)     params['wav'] = share.waVendor;
-
+                const params: Record<string,string> = { oid: orderId, r: receiptUrl };
+                if (share?.waVendor) params['wav'] = share.waVendor;
                 this.router.navigate(['thanks'], { queryParams: params, replaceUrl: true });
             },
             error: () => this.loading.set(false),

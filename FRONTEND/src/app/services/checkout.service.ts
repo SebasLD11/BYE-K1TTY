@@ -18,12 +18,8 @@ export class CheckoutService {
     return this.http.post<any>(`${this.base}/api/pay/summary`, payload);
   }
   finalize(payload: { orderId?: string; items: CheckoutItem[]; buyer: Buyer; discountCode?: string|null; shipping: ShippingSel }) {
-    return this.http.post<any>(`${this.base}/api/pay/finalize`, payload);
-  }
-  emailBuyer(orderId: string){
-  return this.http.post<{ok:true}>(`${this.base}/api/pay/email-buyer`, { orderId });
-  }
-  emailVendor(orderId: string){
-    return this.http.post<{ok:true}>(`${this.base}/api/pay/email-vendor`, { orderId });
+    return this.http.post<{ ok:true; orderId:string; receiptUrl:string; share?:{ waVendor?:string } }>(
+      `${this.base}/api/pay/finalize`, payload
+    );
   }
 }

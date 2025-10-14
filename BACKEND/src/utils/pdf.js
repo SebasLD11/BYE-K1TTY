@@ -4,141 +4,158 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 
-async function bufferFromUrl(url){ const r=await axios.get(url,{responseType:'arraybuffer'}); return Buffer.from(r.data); }
+async function bufferFromUrl(url){
+  const r = await axios.get(url, { responseType: 'arraybuffer' });
+  return Buffer.from(r.data);
+}
 
 async function generateReceiptPDF(order, { outDir, brandLogoUrl }) {
   const filename = `receipt_${String(order._id).slice(-8)}_${Date.now()}.pdf`;
   const fullPath = path.join(outDir, filename);
   await fs.promises.mkdir(outDir, { recursive: true });
 
-  const doc = new PDFDocument({ size:'A4', margin:40 });
+  const doc = new PDFDocument({ size: 'A4', margin: 48 }); // margen algo mayor
   const stream = fs.createWriteStream(fullPath);
   doc.pipe(stream);
 
-  // Helpers
-  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-  const L = doc.page.margins.left;         // x inicio
-  const R = L + pageWidth;                  // x final
-  const Y = (val) => { doc.y = val; return val; };
-  const line = (y) => { doc.moveTo(L, y).lineTo(R, y).strokeColor('#ddd').lineWidth(1).stroke(); };
-  const textRight = (txt, x, y, w) => doc.text(txt, x, y, { width:w, align:'right' });
-  const textCenter= (txt, x, y, w) => doc.text(txt, x, y, { width:w, align:'center' });
+  // === Helpers ===
+  const L = doc.page.margins.left;
+  const W = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  const R = L + W;
+  const gutter = 14;
 
-  // Cabecera
-  if (brandLogoUrl) { try { doc.image(await bufferFromUrl(brandLogoUrl), L, Y(40), { width: 120 }); } catch {} }
-  doc.fontSize(18).text('RECIBO', R-120, 40, { width:120, align:'right' });
+  const line = (y) => {
+    doc.moveTo(L, y).lineTo(R, y).strokeColor('#e5e7eb').lineWidth(1).stroke();
+  };
 
-  // Bloque datos
-  doc.fontSize(10);
-  const yTop = 80;
+  // === Cabecera ===
+  let y = 48;
+  if (brandLogoUrl) {
+    try { doc.image(await bufferFromUrl(brandLogoUrl), L, y, { width: 120 }); } catch {}
+  }
+  doc.font('Helvetica-Bold').fontSize(18).text('RECIBO', R - 140, y, { width: 140, align: 'right' });
+
+  // === Bloques superiores en 3 columnas (sin solapes) ===
+  y += 36;
+  const colW = (W - gutter * 2) / 3;
+  const yTop = y;
 
   // Vendedor
-  doc.font('Helvetica-Bold').text('Vendedor:', L, Y(yTop));
-  doc.font('Helvetica').text('BYE K1TTY — NIF/CIF: 48273903P');
-  doc.text('C/Ripollès 87, La mora. Tarragona, 43008');
-  doc.text('Email: aharonbj96@gmail.com · Tel: +34 634 183 862');
+  let y1 = yTop;
+  doc.font('Helvetica-Bold').fontSize(10).text('Vendedor:', L, y1, { width: colW });
+  doc.font('Helvetica').fontSize(10);
+  y1 = doc.text('BYE K1TTY — NIF/CIF: 48273903P', L, doc.y, { width: colW }).y;
+  y1 = doc.text('C/ Ripollès 87, La Mora, Tarragona, 43008', L, y1, { width: colW }).y;
+  y1 = doc.text('Email: aharonbj96@gmail.com · Tel: +34 634 183 862', L, y1, { width: colW }).y;
 
   // Pedido
-  const yVendEnd = doc.y;
-  const col2x = L + pageWidth * 0.45;
-  doc.font('Helvetica-Bold').text('Pedido', col2x, yTop);
-  doc.font('Helvetica').text(`Nº: ${order._id}`, col2x);
-  doc.text(`Fecha: ${new Date(order.createdAt || Date.now()).toLocaleDateString('es-ES')}`, col2x);
+  let y2 = yTop;
+  const x2 = L + colW + gutter;
+  doc.font('Helvetica-Bold').fontSize(10).text('Pedido', x2, y2, { width: colW });
+  doc.font('Helvetica').fontSize(10);
+  y2 = doc.text(`Nº: ${order._id}`, x2, doc.y, { width: colW }).y;
+  const created = new Date(order.createdAt || Date.now());
+  y2 = doc.text(`Fecha: ${created.toLocaleDateString('es-ES')}`, x2, y2, { width: colW }).y;
 
   // Comprador
-  const yPedEnd = doc.y;
-  const col3x = L + pageWidth * 0.65;
-  doc.font('Helvetica-Bold').text('Comprador', col3x, yTop);
+  let y3 = yTop;
+  const x3 = x2 + colW + gutter;
+  doc.font('Helvetica-Bold').fontSize(10).text('Comprador', x3, y3, { width: colW });
+  doc.font('Helvetica').fontSize(10);
   const b = order.buyer || {};
-  doc.font('Helvetica').text(`${b.fullName || ''}`, col3x);
-  doc.text(`${b.email || ''} — ${b.phone || ''}`, col3x);
-  doc.text(`${b.line1 || ''} ${b.line2 || ''}`, col3x);
-  doc.text(`${b.postalCode || ''} ${b.city || ''} (${b.province || ''})`, col3x);
+  y3 = doc.text(`${b.fullName || ''}`, x3, doc.y, { width: colW }).y;
+  y3 = doc.text(`${b.email || ''} — ${b.phone || ''}`, x3, y3, { width: colW }).y;
+  y3 = doc.text(`${b.line1 || ''} ${b.line2 || ''}`, x3, y3, { width: colW }).y;
+  y3 = doc.text(`${b.postalCode || ''} ${b.city || ''} (${b.province || ''})`, x3, y3, { width: colW }).y;
+
+  y = Math.max(y1, y2, y3) + 14;
 
   // Envío
-  const yCompEnd = doc.y;
-  const yBlocksEnd = Math.max(yVendEnd, yPedEnd, yCompEnd);
-  Y(yBlocksEnd + 16);
-  doc.font('Helvetica-Bold').text('Envío');
-  doc.font('Helvetica').text(`${order.shipping?.carrier || '—'} — ${order.shipping?.service || '—'}`);
-  doc.text(order.shipping?.zone ? `Zona: ${order.shipping.zone}` : '');
+  doc.font('Helvetica-Bold').fontSize(10).text('Envío', L, y);
+  doc.font('Helvetica').fontSize(10);
+  y = doc.text(`${order.shipping?.carrier || '—'} — ${order.shipping?.service || '—'}`, L, doc.y, { width: W }).y;
+  if (order.shipping?.zone) y = doc.text(`Zona: ${order.shipping.zone}`, L, y, { width: W }).y;
 
-  // Tabla artículos
-  Y(doc.y + 12);
-  line(doc.y); Y(doc.y + 8);
+  // === Tabla de artículos ===
+  y += 10; line(y); y += 8;
 
-  const xProd = L;
-  const wProd = pageWidth * 0.52;
-  const xQty  = L + pageWidth * 0.57;
-  const wQty  = pageWidth * 0.08;
-  const xPrice= L + pageWidth * 0.67;
-  const wPrice= pageWidth * 0.13;
-  const xAmt  = L + pageWidth * 0.82;
-  const wAmt  = pageWidth * 0.18;
+  // Columnas (sumar 1.00)
+  const wProd  = W * 0.54;
+  const wQty   = W * 0.10;
+  const wPrice = W * 0.16;
+  const wAmt   = W * 0.20;
+  const xProd = L, xQty = xProd + wProd, xPrice = xQty + wQty, xAmt = xPrice + wPrice;
 
-  doc.font('Helvetica-Bold');
-  doc.text('Producto', xProd, doc.y, { width:wProd });
-  textCenter('Cant.', xQty, doc.y, wQty);
-  textRight('Precio', xPrice, doc.y, wPrice);
-  textRight('Importe', xAmt, doc.y, wAmt);
+  doc.font('Helvetica-Bold').fontSize(10);
+  doc.text('Producto', xProd, y, { width: wProd });
+  doc.text('Cant.',   xQty,  y, { width: wQty, align: 'center' });
+  doc.text('Precio',  xPrice,y, { width: wPrice, align: 'right' });
+  doc.text('Importe', xAmt,  y, { width: wAmt, align: 'right' });
 
-  Y(doc.y + 12);
-  line(doc.y); Y(doc.y + 6);
-  doc.font('Helvetica');
+  y += 12; line(y); y += 6; doc.font('Helvetica').fontSize(10);
 
+  const rowGap = 6;
   for (const it of order.items || []) {
     const name = it.size ? `${it.name} — Talla ${it.size}` : it.name;
-    doc.text(name, xProd, doc.y, { width:wProd });
-    textCenter(String(it.qty), xQty, doc.y, wQty);
-    textRight(`€${Number(it.price).toFixed(2)}`, xPrice, doc.y, wPrice);
-    textRight(`€${(Number(it.price)*Number(it.qty)).toFixed(2)}`, xAmt, doc.y, wAmt);
-    Y(doc.y + 6);
+
+    // altura de la celda por el texto del producto
+    const hName = doc.heightOfString(name, { width: wProd, align: 'left' });
+    const rowH = Math.max(hName, doc.currentLineHeight());
+
+    doc.text(name, xProd, y, { width: wProd });
+    doc.text(String(it.qty), xQty, y, { width: wQty, align: 'center' });
+    doc.text(`€${Number(it.price).toFixed(2)}`, xPrice, y, { width: wPrice, align: 'right' });
+    doc.text(`€${(Number(it.price) * Number(it.qty)).toFixed(2)}`, xAmt, y, { width: wAmt, align: 'right' });
+
+    y += rowH + rowGap;
   }
 
-  Y(doc.y + 4);
-  line(doc.y);
-  Y(doc.y + 10);
+  y += 4; line(y); y += 10;
 
-  // Resumen (alineado a la derecha, sin solaparse)
-  const colW = 160;
+  // Resumen (alineado derecha)
+  const colW = 180;
   const colX = R - colW;
 
   const subtotal = Number(order.subtotal || 0);
   const discount = Number(order.discountAmount || 0);
-  const vatAmt   = Number(order.vatAmount || 0); // informativo (IVA incluido)
+  const vatAmt   = Number(order.vatAmount || 0); // informativo (IVA incl.)
   const shipCost = Number(order.shipping?.cost || 0);
   const total    = Number(order.total || (subtotal - discount + shipCost));
 
-  doc.font('Helvetica');
-  doc.text('Subtotal (IVA incl.)', colX, doc.y, { width: colW/2 }); textRight(`€${subtotal.toFixed(2)}`, colX, doc.y, colW);
+  doc.font('Helvetica').fontSize(10);
+  doc.text('Subtotal (IVA incl.)', colX, y, { width: colW/2 });
+  doc.text(`€${subtotal.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+
   if (discount > 0) {
-    Y(doc.y + 12);
-    doc.text(`Descuento ${order.discountCode ? `(${order.discountCode})` : ''}`, colX, doc.y, { width: colW/2 });
-    textRight(`-€${discount.toFixed(2)}`, colX, doc.y, colW);
+    y += 12;
+    doc.text(`Descuento${order.discountCode ? ` (${order.discountCode})` : ''}`, colX, y, { width: colW/2 });
+    doc.text(`-€${discount.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
   }
-  Y(doc.y + 12);
-  doc.text('IVA (informativo)', colX, doc.y, { width: colW/2 }); textRight(`€${vatAmt.toFixed(2)}`, colX, doc.y, colW);
+
+  y += 12;
+  doc.text('IVA (informativo)', colX, y, { width: colW/2 });
+  doc.text(`€${vatAmt.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
+
   if (order.shipping) {
-    Y(doc.y + 12);
-    doc.text(`Envío`, colX, doc.y, { width: colW/2 }); textRight(`€${shipCost.toFixed(2)}`, colX, doc.y, colW);
+    y += 12;
+    doc.text('Envío', colX, y, { width: colW/2 });
+    doc.text(`€${shipCost.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
   }
 
-  // Total (negrita)
-  Y(doc.y + 14);
-  doc.font('Helvetica-Bold');
-  doc.text('Total', colX, doc.y, { width: colW/2 });
-  textRight(`€${total.toFixed(2)}`, colX, doc.y, colW);
+  y += 14;
+  doc.font('Helvetica-Bold').text('Total', colX, y, { width: colW/2 });
+  doc.text(`€${total.toFixed(2)}`, colX, y, { width: colW, align: 'right' });
 
-  // Nota de pago
-  Y(doc.y + 18);
-  line(doc.y); Y(doc.y + 10);
+  // Nota
+  y += 18; line(y); y += 10;
   doc.font('Helvetica').fontSize(9).text(
     'Método de pago: Bizum pendiente de confirmación por el vendedor.\nGracias por tu compra. Cupón -10% para próxima compra: BK10',
-    L, doc.y, { width: pageWidth }
+    L, y, { width: W }
   );
 
   doc.end();
   await new Promise(r => stream.on('finish', r));
   return { filename, fullPath };
 }
+
 module.exports = { generateReceiptPDF };
