@@ -11,14 +11,23 @@ const serialize = p => ({
   images: (Array.isArray(p.images)? p.images:[]).map(abs),
   sizes: (Array.isArray(p.sizes) ? p.sizes : []).map(String), // ✅ tallas = texto
   // 👇 incluir en respuesta
-  collectionTitle: p.collectionTitle || 'Sin colección'
+  collectionTitle: p.collectionTitle || 'Sin colección',
+  // 👇 añade timestamps; lean() te los deja como Date, OK para el front
+  createdAt: p.createdAt,
+  updatedAt: p.updatedAt,
 });
 
 exports.list = async (_req, res, next) => {
   try {
-    const docs = await Product.find({}).sort({createdAt:-1, _id:-1}).lean();
-    return res.json(docs.map(serialize)); // array simple
-  } catch (e) { next(e); }
+    const docs = await Product
+      .find({})
+      .sort({ createdAt: -1, _id: -1 })
+      .lean();
+
+    // (opcional) cache corta para CDN/proxy
+    res.set('Cache-Control', 'public, max-age=60, s-maxage=300');
+    return res.json(docs.map(serialize));
+  }catch (e) { next(e); }
 };
 
 

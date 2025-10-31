@@ -10,7 +10,8 @@ const ProductSchema = new Schema(
     // 👇 NUEVO: título de la colección a la que pertenece el producto
     collectionTitle: { type: String, default: 'Sin colección', index: true },
 },
-{ timestamps: true }
+{ timestamps: true },
 );
-
+// en el schema, además de timestamps: true
+ProductSchema.index({ collectionTitle: 1, createdAt: -1 });
 module.exports = model('Product', ProductSchema);

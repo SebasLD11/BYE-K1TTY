@@ -7,4 +7,7 @@ export interface Product {
     sizes: string[];
     // 👇 NUEVO
     collectionTitle?: string; // fallback en UI si viene vacío
+      // 👇 necesarios para ordenar por fecha en groups()
+    createdAt?: string | Date;
+    updatedAt?: string | Date;
 }

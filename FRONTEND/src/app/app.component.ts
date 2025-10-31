@@ -64,10 +64,11 @@ export class AppComponent {
         const min = this.filterMin();
         const max = this.filterMax();
 
-        return this.products().filter(p => {
-            const byName = !q || p.name.toLowerCase().includes(q);
+        return this.products().filter((p: any) => {
+            const byName = !q || String(p.name).toLowerCase().includes(q);
             const byTag = tags.size === 0 || tags.has(p.tag);
-            const byPrice = typeof p.price === 'number' && p.price >= min && p.price <= max;
+            const priceNum = Number(p.price);
+            const byPrice = Number.isFinite(priceNum) && priceNum >= min && priceNum <= max;
             return byName && byTag && byPrice;
         });
     });
@@ -98,6 +99,7 @@ export class AppComponent {
         });
         // ✅ Mejora accesible (opcional): bloquear scroll y hacer inerte el fondo
         effect(() => {
+            console.log('Orden colecciones →', this.groups().map(g => ({ title: g.title, n: g.items.length })));
             // en el effect(): ya no depende de tab
             const overlayOpen = this.cartOpen || this.filtersOpen || !!this.selected;
 
@@ -126,23 +128,70 @@ export class AppComponent {
         });
     }
 
-    // Grupos por colección con fallback
-    readonly groups = computed(() => {
-    const map = new Map<string, Product[]>();
-    for (const p of this.filteredProducts()) {
-        const key = (p.collectionTitle || 'Sin colección').trim() || 'Sin colección';
-        if (!map.has(key)) map.set(key, []);
-        map.get(key)!.push(p);
+    // ===============================
+    //  ORDEN POR FECHA DE COLECCIÓN
+    // ===============================
+
+    /** Normaliza fecha: ISO string | Date | Firestore Timestamp -> epoch (ms). Devuelve 0 si no válido. */
+    private toTs(v: any): number {
+        try {
+        if (!v) return 0;
+        // Firestore Timestamp
+        if (v && typeof (v as any).toDate === 'function') v = (v as any).toDate();
+        if (v instanceof Date && !isNaN(v.getTime())) return v.getTime();
+        const t = new Date(v as string).getTime();
+        return Number.isFinite(t) ? t : 0;
+        } catch {
+        return 0;
+        }
     }
-    // Ordena alfabético por título de colección (opcional)
-    return Array.from(map.entries())
-        .sort((a,b) => a[0].localeCompare(b[0]))
-        .map(([title, items]) => ({ title, items }));
+
+    /** Grupos por colección ordenados por fecha desc:
+     * - Usa p.collectionAt || p.collectionDate si existe (misma para todos los items recomendable).
+     * - Si no, cae a p.createdAt || p.updatedAt.
+     * - "Sin colección" va al final.
+     */
+    readonly groups = computed(() => {
+        // title -> { items, date }
+        const map = new Map<string, { items: Product[]; date: number }>();
+
+        for (const p of this.filteredProducts()) {
+        const anyP: any = p as any;
+        const key = (anyP.collectionTitle || 'Sin colección').trim() || 'Sin colección';
+
+        // 1) fecha explícita de colección si viene
+        const collectionTs = this.toTs(anyP.collectionAt) || this.toTs(anyP.collectionDate);
+        // 2) fallback a fechas del producto
+        const productTs = collectionTs || this.toTs(anyP.createdAt) || this.toTs(anyP.updatedAt);
+
+        const entry = map.get(key);
+        if (!entry) {
+            map.set(key, { items: [p], date: productTs });
+        } else {
+            entry.items.push(p);
+            // representantes por la MÁS RECIENTE de la colección
+            entry.date = Math.max(entry.date, productTs);
+        }
+        }
+
+        return Array.from(map.entries())
+        .sort((a, b) => {
+            // 1) fecha DESC
+            const d = b[1].date - a[1].date;
+            if (d !== 0) return d;
+            // 2) "Sin colección" al final
+            if (a[0] === 'Sin colección') return 1;
+            if (b[0] === 'Sin colección') return -1;
+            // 3) desempate alfabético estable
+            return a[0].localeCompare(b[0], 'es', { sensitivity: 'base' });
+        })
+        .map(([title, { items }]) => ({ title, items }));
     });
+
     private normalizeAsset(src: string): string {
         if (!src) return this.FALLBACK_IMG;
-        if (/^https?:\/\//i.test(src)) return src;      // ya es absoluta
-        return src.replace(/^\/+/, '');                 // quita / inicial -> assets/...
+        if (/^https?:\/\//i.test(src)) return src; // ya es absoluta
+        return src.replace(/^\/+/, ''); // quita / inicial -> assets/...
     }
 
     trackById = (_: number, p: Product) => p._id;
