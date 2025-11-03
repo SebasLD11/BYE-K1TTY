@@ -6,6 +6,7 @@ import { ProductService } from './services/product.service';
 import { CartService } from './services/cart.service';
 import { CheckoutService } from './services/checkout.service';
 import { Product } from './models/product.model';
+import { colorLabel, colorValue } from './utils/color.util';
 
 
 @Component({
@@ -35,6 +36,9 @@ export class AppComponent {
     cartOpen = false;
     selectedSize: string | null = null;
     selectedColor: string | null = null;
+    colorLabel = colorLabel;
+    // (opcional) si usas el swatch con hex
+    colorValue = colorValue;
     // Muestra el banner solo la primera vez por sesión
     showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');
 

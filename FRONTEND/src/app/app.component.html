@@ -342,7 +342,7 @@
       <button class="cta"
         [disabled]="selected?.sizes?.length && !selectedSize || (selected?.colors?.length && !selectedColor)"
         (click)="addFromModal()">
-        Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span><span *ngIf="selectedColor"> — {{selectedColor}}</span>
+        Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span><span *ngIf="selectedColor"> — {{ colorLabel(selectedColor) }}</span>
       </button>
     </div>
   </div>
@@ -362,7 +362,7 @@
         <p class="name">
           {{ it.name }}
           <span *ngIf="it.size" class="muted">· Talla {{ it.size }}</span>
-          <span *ngIf="it.color" class="muted">· Color {{ it.color }}</span>
+          <span *ngIf="it.color" class="muted">· Color {{ it.colorLabel || colorLabel(it.color) }}</span>
         </p>
         <p class="muted">{{ it.price | currency:'EUR' }}</p>
         <div class="qty">

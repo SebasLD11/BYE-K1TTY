@@ -3,6 +3,7 @@ const PDFDocument = require('pdfkit');
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const HEX2NAME = { '#000':'Negro','#000000':'Negro','#fff':'Blanco','#ffffff':'Blanco','#ff0000':'Rojo','#0000ff':'Azul','#ffff00':'Amarillo','#da70d6':'Orquídea' };
 
 async function bufferFromUrl(url){
   const r = await axios.get(url,{ responseType:'arraybuffer' });
@@ -109,7 +110,16 @@ async function generateReceiptPDF(order, { outDir, brandLogoUrl }) {
 
   // Filas
   for (const it of (order.items || [])) {
-    const name = it.size ? `${it.name} — Talla ${it.size}` : it.name;
+    const parts = [it.name];
+    if (it.size) parts.push(`Talla ${it.size}`);
+    // 👇 preferimos etiqueta del front; si no, mapeamos HEX conocido
+    if (it.color || it.colorLabel) {
+      const raw = (it.colorLabel && String(it.colorLabel).trim()) || null;
+      const hex = (it.color && String(it.color).trim().toLowerCase()) || null;
+      const label = raw || (hex ? (HEX2NAME[hex] || hex) : null);
+      if (label) parts.push(`Color ${label}`);
+    }
+    const name = parts.join(' — ');
     const rowTop = doc.y;
 
     // Calcula alto real de la celda de producto (multi-línea)

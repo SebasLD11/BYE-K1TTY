@@ -3,10 +3,11 @@ import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, map } from 'rxjs'; // 👈 map para itemCount$
 import { Product } from '../models/product.model';
+import { colorLabel as clabel, colorValue as cvalue } from '../utils/color.util';
 
 export interface CartItem {
   key: string; id: string; name: string; price: number; qty: number;
-  img?: string; size?: string | null; color?: string | null;
+  img?: string; size?: string | null; color?: string | null; colorLabel?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -57,6 +58,9 @@ export class CartService {
       const size = sizeRaw ? String(sizeRaw).trim() : null; // 👈 normaliza talla
       const colorRaw = typeof i?.color === 'string' ? i.color : null;
       const color = colorRaw ? String(colorRaw).trim() : null; // 👈 normaliza color
+      const colorLabel = typeof i?.colorLabel === 'string' && i.colorLabel.trim()
+        ? i.colorLabel.trim()
+        : (color ? clabel(color) : null);
       // 🔁 Migración: si la clave antigua no trae color (formato id__size),
       // genera la nueva (id__size__color). Usamos 'ANY' cuando no hay color.
       let key = String(i?.key ?? '');
@@ -65,7 +69,7 @@ export class CartService {
         key = `${id}__${size ?? 'ONE'}__${color ?? 'ANY'}`;
       }
 
-      return { key, id, name, price, qty, img, size, color };
+      return { key, id, name, price, qty, img, size, color, colorLabel  };
     }).filter(i => i.id);
   }
 
@@ -76,7 +80,9 @@ export class CartService {
 
   add(p: Product, size: string | null = null, color: string | null = null, qty = 1) {
     const normSize = size ? size.trim() : null;             // 👈 normaliza talla
-    const normColor = color ? color.trim() : null;          // 👈 normaliza color
+    const normColorRaw = color ? color.trim() : null;       // puede ser '#FF0000' o 'Rojo' o 'Rojo|#F00'
+    const normColor = cvalue(normColorRaw);                 // valor real para clave/swatch
+    const normColorLabel = clabel(normColorRaw);            // etiqueta legible
     const key = `${p._id}__${normSize ?? 'ONE'}__${normColor ?? 'ANY'}`;
     const items = [...this._items$.value];
     const idx = items.findIndex(x => x.key === key);
@@ -93,6 +99,7 @@ export class CartService {
         img: p.images?.[0],
         size: normSize,
         color: normColor,
+        colorLabel: normColorLabel
       });
     }
     this.save(items);
@@ -130,6 +137,6 @@ export class CartService {
 
   /** payload para el checkout (shape que espera la API) */
   toCheckoutItems() {
-    return this._items$.value.map(i => ({ id: i.id, qty: i.qty, size: i.size ?? null, color: i.color ?? null }));
+    return this._items$.value.map(i => ({ id: i.id, qty: i.qty, size: i.size ?? null, color: i.color ?? null, colorLabel: i.colorLabel ?? clabel(i.color) }));
   }
 }
