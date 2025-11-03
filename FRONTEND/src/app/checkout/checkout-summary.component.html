@@ -98,7 +98,7 @@
           <div class="item" *ngFor="let it of s.items">
             <img class="thumb" [src]="it.img || 'assets/img/placeholder.png'" alt="">
             <div>
-              <div class="name">{{ it.name }} <span *ngIf="it.size" class="small">· Talla {{it.size}}</span></div>
+              <div class="name">{{ it.name }} <span *ngIf="it.size" class="small">· Talla {{it.size}}</span><span *ngIf="it.color" class="small">· Color {{ it.colorLabel || colorLabel(it.color) }}</span></div>
               <div class="small">x{{ it.qty }}</div>
             </div>
             <div>{{ it.price | currency:'EUR' }}</div>
