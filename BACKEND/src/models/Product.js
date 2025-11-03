@@ -7,6 +7,8 @@ const ProductSchema = new Schema(
     tag: { type: String, enum: ['new', 'best', 'sale', 'drop'], default: 'new' },
     images: { type: [String], default: [] }, // hasta 5 imágenes
     sizes: { type: [String], default: []},
+    // 👇 Nuevos colores disponibles para la prenda
+    colors: { type: [String], default: [] },
     // 👇 NUEVO: título de la colección a la que pertenece el producto
     collectionTitle: { type: String, default: 'Sin colección', index: true },
 },

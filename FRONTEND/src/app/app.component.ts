@@ -34,6 +34,7 @@ export class AppComponent {
     imgIndex = 0;
     cartOpen = false;
     selectedSize: string | null = null;
+    selectedColor: string | null = null;
     // Muestra el banner solo la primera vez por sesión
     showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');
 
@@ -223,10 +224,12 @@ export class AppComponent {
         this.imgIndex = 0;
         // preselecciona primera talla si hay
         this.selectedSize = Array.isArray(p?.sizes) && p.sizes.length ? p.sizes[0] : null;
+        this.selectedColor = Array.isArray((p as any)?.colors) && (p as any).colors.length ? (p as any).colors[0] : null;
     }
     closeProduct(){ 
         this.selected = null;
         this.selectedSize = null; 
+        this.selectedColor = null;
     }                  // 👈 NUEVO
     next(){ if(this.selected) this.imgIndex = (this.imgIndex + 1) % this.selected.images.length; }
     prev(){ if(this.selected) this.imgIndex = (this.imgIndex - 1 + this.selected.images.length) % this.selected.images.length; }
@@ -243,11 +246,12 @@ export class AppComponent {
         if(!this.selected) return;
 
         const size = (this.selected?.sizes?.length ? this.selectedSize : null) || null;
+        const color = (this.selected?.colors?.length ? this.selectedColor : null) || null;
 
         // Guarda el foco ANTES de abrir el carrito
         this._rememberFocus();
 
-        this.cartSvc.add(this.selected, size);
+        this.cartSvc.add(this.selected, size, color);
         this.closeProduct();      // <- basta con esto (evita el set null duplicado)
         this.cartOpen = true;     // abre el carrito para feedback inmediato
     }

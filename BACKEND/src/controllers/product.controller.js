@@ -10,6 +10,8 @@ const serialize = p => ({
   tag: p.tag,
   images: (Array.isArray(p.images)? p.images:[]).map(abs),
   sizes: (Array.isArray(p.sizes) ? p.sizes : []).map(String), // ✅ tallas = texto
+  // 👇 incluir colores en respuesta (texto libre: 'black', 'rojo', '#000000'…)
+  colors: (Array.isArray(p.colors) ? p.colors : []).map(String),
   // 👇 incluir en respuesta
   collectionTitle: p.collectionTitle || 'Sin colección',
   // 👇 añade timestamps; lean() te los deja como Date, OK para el front

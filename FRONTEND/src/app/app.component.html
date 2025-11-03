@@ -152,7 +152,7 @@
                   <div class="right">
                     <span class="tag">{{ p.tag }}</span>
                     <button class="add"
-                      (click)="p.sizes?.length > 1 ? openProduct(p) : cartSvc.add(p, null)">
+                      (click)="(p['sizes']?.length > 1) || (p['colors']?.length) ? openProduct(p) : cartSvc.add(p, null, (p['colors']?.[0] || null))">
                       + Añadir
                     </button>
                   </div>
@@ -307,6 +307,24 @@
 
     <div class="meta">
       <h3>{{ selected?.name }}</h3>
+      <!-- Selector de color -->
+      <div class="colors" *ngIf="selected?.['colors']?.length">
+        <span class="lbl">Color:</span>
+        <div class="colors-row">
+          <button type="button"
+            *ngFor="let c of selected!['colors']"
+            [class.active]="selectedColor === c"
+            (click)="selectedColor = c"
+            [attr.aria-pressed]="selectedColor === c ? 'true' : 'false'"
+            [title]="c">
+            <!-- Si c es un hex (#fff/#000), pinta un swatch; si no, muestra texto -->
+            <span class="swatch"
+                  [style.background]="(c||'').startsWith('#') ? c : null"
+                  [style.border]="(c||'').startsWith('#') ? '1px solid rgba(0,0,0,.2)' : null"></span>
+            <span class="txt" *ngIf="!(c||'').startsWith('#')">{{ c }}</span>
+          </button>
+        </div>
+      </div>
       <!-- Selector de tallas -->
       <div class="sizes" *ngIf="selected?.sizes?.length">
         <span class="lbl">Talla:</span>
@@ -322,9 +340,9 @@
       </div>
       <!-- CTA -->
       <button class="cta"
-        [disabled]="selected?.sizes?.length && !selectedSize"
+        [disabled]="selected?.sizes?.length && !selectedSize || (selected?.colors?.length && !selectedColor)"
         (click)="addFromModal()">
-        Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span>
+        Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span><span *ngIf="selectedColor"> — {{selectedColor}}</span>
       </button>
     </div>
   </div>
@@ -344,6 +362,7 @@
         <p class="name">
           {{ it.name }}
           <span *ngIf="it.size" class="muted">· Talla {{ it.size }}</span>
+          <span *ngIf="it.color" class="muted">· Color {{ it.color }}</span>
         </p>
         <p class="muted">{{ it.price | currency:'EUR' }}</p>
         <div class="qty">

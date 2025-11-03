@@ -6,7 +6,7 @@ import { Product } from '../models/product.model';
 
 export interface CartItem {
   key: string; id: string; name: string; price: number; qty: number;
-  img?: string; size?: string | null;
+  img?: string; size?: string | null; color?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -55,8 +55,17 @@ export class CartService {
       const img  = i?.img ? String(i.img) : undefined;
       const sizeRaw = typeof i?.size === 'string' ? i.size : null;
       const size = sizeRaw ? String(sizeRaw).trim() : null; // 👈 normaliza talla
-      const key  = String(i?.key ?? `${id}__${size ?? 'ONE'}`);
-      return { key, id, name, price, qty, img, size };
+      const colorRaw = typeof i?.color === 'string' ? i.color : null;
+      const color = colorRaw ? String(colorRaw).trim() : null; // 👈 normaliza color
+      // 🔁 Migración: si la clave antigua no trae color (formato id__size),
+      // genera la nueva (id__size__color). Usamos 'ANY' cuando no hay color.
+      let key = String(i?.key ?? '');
+      const parts = key.split('__');
+      if (!key || parts.length < 3) {
+        key = `${id}__${size ?? 'ONE'}__${color ?? 'ANY'}`;
+      }
+
+      return { key, id, name, price, qty, img, size, color };
     }).filter(i => i.id);
   }
 
@@ -65,9 +74,10 @@ export class CartService {
     this._items$.next(items);
   }
 
-  add(p: Product, size: string | null = null, qty = 1) {
-    const normSize = size ? size.trim() : null;            // 👈 normaliza talla
-    const key = `${p._id}__${normSize ?? 'ONE'}`;
+  add(p: Product, size: string | null = null, color: string | null = null, qty = 1) {
+    const normSize = size ? size.trim() : null;             // 👈 normaliza talla
+    const normColor = color ? color.trim() : null;          // 👈 normaliza color
+    const key = `${p._id}__${normSize ?? 'ONE'}__${normColor ?? 'ANY'}`;
     const items = [...this._items$.value];
     const idx = items.findIndex(x => x.key === key);
 
@@ -81,7 +91,8 @@ export class CartService {
         price: Number(p.price) || 0,
         qty: Math.max(1, qty),
         img: p.images?.[0],
-        size: normSize
+        size: normSize,
+        color: normColor,
       });
     }
     this.save(items);
@@ -119,6 +130,6 @@ export class CartService {
 
   /** payload para el checkout (shape que espera la API) */
   toCheckoutItems() {
-    return this._items$.value.map(i => ({ id: i.id, qty: i.qty, size: i.size ?? null }));
+    return this._items$.value.map(i => ({ id: i.id, qty: i.qty, size: i.size ?? null, color: i.color ?? null }));
   }
 }

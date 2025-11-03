@@ -582,6 +582,72 @@
   outline-offset: 2px;
 }
 
+/* =========================
++   SELECTOR DE COLOR (modal)
++   ========================= */
+.meta .colors{
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 10px 0 12px;
+}
+.meta .colors .lbl{
+  font-weight: 700;
+  font-size: 12px;
+  opacity: .8;
+  white-space: nowrap;
+}
+.meta .colors-row{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.meta .colors-row button{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,.12);
+  background: transparent;
+  color: inherit;
+  font-weight: 800;
+  letter-spacing: .02em;
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, box-shadow .12s ease, transform .06s ease;
+  user-select: none;
+}
+.meta .colors-row button:hover{ background: rgba(0,0,0,.05); }
+.meta .colors-row button:active{ transform: translateY(1px); }
+.meta .colors-row button:focus-visible{
+  outline: 2px solid #facc15;
+  outline-offset: 2px;
+}
+.meta .colors-row button.active,
+.meta .colors-row button[aria-pressed="true"]{
+  background: #facc15;
+  color: #000;
+  border-color: #facc15;
+  box-shadow: 0 0 0 2px rgba(250,204,21,.25);
+}
+/* pastilla de color cuando el valor es HEX (se pinta en línea en el HTML) */
+.meta .colors-row .swatch{
+  width: 16px; height: 16px; border-radius: 999px; display: inline-block;
+  border: 1px solid rgba(0,0,0,.2); /* se sobrescribe en dark */
+  flex: 0 0 16px;
+}
+.meta .colors-row .txt{
+  font-size: 12px; font-weight: 800; letter-spacing: .02em;
+}
+:host.dark .meta .colors-row button{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.02);
+}
+:host.dark .meta .colors-row button:hover{ background: rgba(255,255,255,.08); }
+:host.dark .meta .colors-row .swatch{ border-color: rgba(255,255,255,.25); }
+
 /* Tema oscuro */
 :host.dark .meta .sizes-row button{
   border-color: rgba(255,255,255,.12);
@@ -936,6 +1002,19 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     min-width: 44px;       /* mínimo recomendado de tap */
     padding: 10px 12px;
   }
+  /* Colores: mismas reglas responsive que tallas */
+  .meta .colors{
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .meta .colors .lbl{
+    font-size: 12px;
+    opacity: .9;
+  }
+  .meta .colors-row button{
+    min-height: 38px;
+    padding: 10px 12px;
+  }
 
   .collection{ margin: 12px 0 20px; }
 
@@ -1076,10 +1155,14 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
     max-width: 360px;              /* evita que “empuje” en móviles muy estrechos */
     border-radius: var(--radius);
   }
-  .meta .sizes-row{ gap: 6px; }
-  .meta .sizes-row button{
+  .meta .sizes-row, .meta .colors-row{ gap: 6px; }
+  .meta .sizes-row button, .meta .colors-row button{
     padding: 9px 10px;
     border-radius: 9px;
+  }
+  /* Color swatch un pelín mayor en móviles muy estrechos */
+  .meta .colors-row .swatch{
+    width: 18px; height: 18px;
   }
 
   .collection{ margin: 10px 0 16px; }
