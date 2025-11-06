@@ -152,7 +152,10 @@
                   <div class="right">
                     <span class="tag">{{ p.tag }}</span>
                     <button class="add"
-                      (click)="(p['sizes']?.length > 1) || (p['colors']?.length) ? openProduct(p) : cartSvc.add(p, null, (p['colors']?.[0] || null))">
+                      [disabled]="p['sizes']?.length && !availableSizesOf(p).length"
+                      (click)="(p['sizes']?.length > 1) || (p['colors']?.length) || (availableSizesOf(p).length !== 1)
+                      ? openProduct(p)
+                      : cartSvc.add(p, availableSizesOf(p)[0] || null, (p['colors']?.[0] || null))">
                       + Añadir
                     </button>
                   </div>
@@ -332,15 +335,18 @@
           <button type="button"
             *ngFor="let s of selected.sizes"
             [class.active]="selectedSize === s"
-            (click)="selectedSize = s"
+            [disabled]="!isSizeAvailable(selected!, s)"
+            (click)="isSizeAvailable(selected!, s) && (selectedSize = s)"
             [attr.aria-pressed]="selectedSize === s ? 'true' : 'false'">
             {{ s }}
+            <!-- deshabilita y atenúa si no está disponible -->
           </button>
+          <button *ngIf="false"></button>
         </div>
       </div>
       <!-- CTA -->
       <button class="cta"
-        [disabled]="selected?.sizes?.length && !selectedSize || (selected?.colors?.length && !selectedColor)"
+        [disabled]="(selected?.['sizes']?.length && (!selectedSize || !isSizeAvailable(selected!, selectedSize))) || (selected?.['colors']?.length && !selectedColor)"
         (click)="addFromModal()">
         Añadir al carrito<span *ngIf="selectedSize"> — {{selectedSize}}</span><span *ngIf="selectedColor"> — {{ colorLabel(selectedColor) }}</span>
       </button>
