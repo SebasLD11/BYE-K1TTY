@@ -36,28 +36,25 @@ export class AppComponent {
     cartOpen = false;
     selectedSize: string | null = null;
     selectedColor: string | null = null;
+    // helpers expuestos al template
     colorLabel = colorLabel;
-    // (opcional) si usas el swatch con hex
     colorValue = colorValue;
-    // === Helpers de tallas disponibles ===
-    /** Devuelve la lista de tallas disponibles del producto.
-     *  Soporta availableSizes, alias 'Disponibles' o cae a sizes.
-     */
+
+    // === disponibles ===
     availableSizesOf(p: Product): string[] {
-        const anyP: any = p as any;
-        const src = Array.isArray(anyP.availableSizes) ? anyP.availableSizes
-                : (Array.isArray(anyP.Disponibles) ? anyP.Disponibles
-                : (Array.isArray(anyP.sizes) ? anyP.sizes : []));
-        return src.map((s: any) => String(s));
+    const any: any = p as any;
+    const src = Array.isArray(any.availableSizes) ? any.availableSizes
+                : (Array.isArray(any.Disponibles) ? any.Disponibles
+                : (Array.isArray(any.sizes) ? any.sizes : []));
+    return src.map((s: any) => String(s));
     }
-    /** ¿La talla s está disponible en p? Si no hay info, se asume disponible. */
     isSizeAvailable(p: Product, s: string): boolean {
         const av = this.availableSizesOf(p);
         return av.length ? av.includes(s) : true;
     }
-    /** Primera talla disponible o null */
     firstAvailableSize(p: Product): string | null {
-        const av = this.availableSizesOf(p); return av.length ? av[0] : null;
+        const av = this.availableSizesOf(p);
+        return av.length ? av[0] : null;
     }
     // Muestra el banner solo la primera vez por sesión
     showEntry = !(typeof window !== 'undefined' && sessionStorage.getItem('bk-entry') === '1');

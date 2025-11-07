@@ -11,6 +11,7 @@ const itemSchema = z.object({
   id: z.string(),
   qty: z.number().min(1),
   size: z.string().min(1).nullable().optional(),
+  color: z.string().min(1).nullable().optional(),
 });
 const buyerSchema = z.object({
   fullName: z.string().min(2),
