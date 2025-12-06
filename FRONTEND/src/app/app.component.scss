@@ -349,7 +349,7 @@ body.no-scroll {
   line-height: 1.5;
   opacity: .9;
 }
-
+/* ***Deshabilitado por Aharon***
 .about-header{
   display: grid;
   gap: 12px;
@@ -366,7 +366,7 @@ body.no-scroll {
   font-size: clamp(15px, 1.15vw, 18px);
   line-height: 1.5;
   opacity: .9;
-}
+}*/
 
 /* Cuerpo: 2 columnas en desktop */
 .about-grid{
@@ -991,10 +991,11 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .about h2{
     font-size: clamp(22px, 4.2vw, 28px);
   }
+  /*
   .about-header p{
     font-size: 16px;
     max-width: 680px;
-  }
+  }*/
   .contact-list{
     grid-template-columns: 1fr; /* una columna en móvil */
   }
@@ -1158,8 +1159,9 @@ button[disabled]{ opacity:.5; cursor:not-allowed; }
   .about-grid{
     gap: 20px;                     /* seguimos con 20px entre bloques */
   }
+  /*
   .about-header h2{ font-size: 22px; }
-  .about-header p{ font-size: 15px; }
+  .about-header p{ font-size: 15px; }*/
   .contact-card{ padding: 10px 12px; }
   .icon{ width: 20px; height: 20px; }
   .about-media img{
