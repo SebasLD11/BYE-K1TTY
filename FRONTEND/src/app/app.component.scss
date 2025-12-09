@@ -157,7 +157,7 @@ body.no-scroll {
 .entry-banner .entry-cta{
   padding: 12px 18px;
   border: 0; border-radius: 14px;
-  background: #fff; color:#000; font-weight: 900;
+  background: #f892d9; color:#000; font-weight: 900;
   box-shadow: 0 8px 30px rgba(0,0,0,.25);
   transition: transform .1s ease, box-shadow .15s ease;
 }
@@ -188,7 +188,7 @@ body.no-scroll {
 .shop .filters-toggle{
   display:none; /* visible en móvil */
   padding:8px 12px; border:none; border-radius:12px; cursor:pointer;
-  background:#e5e7eb; color:inherit; font-weight:600;
+  background:#f892d9; color:inherit; font-weight:600;
 }
 :host.dark .shop .filters-toggle{ background:#1f2937; }
 
@@ -313,7 +313,7 @@ body.no-scroll {
 .info{ display:flex; align-items:center; justify-content:space-between; padding:12px; gap:10px; }
 .info h3{ margin:0 0 2px; font-size:15px; line-height:1.2; }
 .info .price{ opacity:.85; font-size:14px; margin:0; }
-.info .tag{ padding:4px 8px; background:#facc15; color:#000; border-radius:999px; font-size:12px; font-weight:800; }
+.info .tag{ padding:4px 8px; background:#fff; color:#000; border-radius:999px; font-size:12px; font-weight:800; }
 .info .add{
   padding:6px 10px; border-radius:10px; border:none; background:rgba(250,204,21,.2); color:inherit; cursor:pointer;
 }
