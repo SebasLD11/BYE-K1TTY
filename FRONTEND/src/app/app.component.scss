@@ -101,7 +101,7 @@ body.no-scroll {
 .actions button{
   padding:6px 10px;
   border-radius:12px;
-  border:1px solid #000;
+  border:1px solid transparent;
   background:transparent;
   color:inherit; font-weight:600; cursor:pointer;
   font-size: clamp(12px, 3.4vw, 16px);
