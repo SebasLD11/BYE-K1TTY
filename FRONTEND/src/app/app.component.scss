@@ -429,6 +429,14 @@ body.no-scroll {
   z-index: 1;          /* por encima de la imagen -> fixes en taps */
 }
 
+.about-intro {
+  margin: 0;
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.55;
+  opacity: .9;
+  max-width: 800px;
+}
+
 /* Contacto */
 .contact h3, .faq h3{
   margin: 0 0 4px 0;
