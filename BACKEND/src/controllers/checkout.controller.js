@@ -37,13 +37,36 @@ const summarySchema = z.object({
 });
 
 // ===== Helpers =====
+// Registro de cupones con límite de usos
+const COUPONS = {
+  'CHRIST+': { percent: 0.25, maxUses: 5, used: 0 },
+  'BK10': { percent: 0.10, maxUses: Infinity },
+  'BYE10': { percent: 0.10, maxUses: Infinity },
+};
+
 function applyDiscount(subtotal, code) {
   const normalized = String(code || '').trim().toUpperCase();
-  if (!normalized) return { discountCode: null, discountAmount: 0 };
-  if (['BK10', 'BYE10', 'DISCOUNT10'].includes(normalized)) {
-    return { discountCode: normalized, discountAmount: +(subtotal * 0.09).toFixed(2) };
+  if (!normalized) {
+    return { discountCode: null, discountAmount: 0 };
   }
-  return { discountCode: normalized, discountAmount: 0 };
+
+  const coupon = COUPONS[normalized];
+  if (!coupon) {
+    return { discountCode: normalized, discountAmount: 0 };
+  }
+
+  // Verificar límite de usos
+  if (coupon.used >= coupon.maxUses) {
+    return { discountCode: normalized, discountAmount: 0, error: 'LIMIT_REACHED' };
+  }
+
+  // Aplicar descuento
+  const discountAmount = +(subtotal * coupon.percent).toFixed(2);
+
+  // Registrar uso
+  coupon.used++;
+
+  return { discountCode: normalized, discountAmount };
 }
 
 function waLinkForVendor(number, order, receiptUrl) {
