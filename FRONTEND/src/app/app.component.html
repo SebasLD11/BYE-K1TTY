@@ -121,10 +121,14 @@
           <div class="collection" *ngFor="let g of groups()">
             <h3 class="collection-head">
               <button type="button"
-                      class="collection-title"
-                      (click)="toggleCollection(g.title)"
-                      [attr.aria-expanded]="!isCollapsed(g.title)"
-                      [attr.aria-controls]="'col-'+g.title">
+                class="collection-title"
+                [ngClass]="{
+                  'collection-fake': g.title === 'FAKE',
+                  'collection-vulgar': g.title === 'VULGAR'
+                }"
+                (click)="toggleCollection(g.title)"
+                [attr.aria-expanded]="!isCollapsed(g.title)"
+                [attr.aria-controls]="'col-'+g.title">
                 {{ g.title }} <small>({{ g.items.length }})</small>
               </button>
             </h3>

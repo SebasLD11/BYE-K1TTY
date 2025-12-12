@@ -292,6 +292,34 @@ body.no-scroll {
   box-shadow:0 10px 30px rgba(0,0,0,.08);
 }
 :host.dark .card{ background:rgba(24,24,27,.92); }
+/* FAKE → rojo fuerte + letra blanca */
+.collection-title.collection-fake {
+  background: #d90429 !important;
+  color: #fff !important;
+  border-color: #d90429 !important;
+}
+
+/* Hover y active (opcional, pero queda bonito) */
+.collection-title.collection-fake:hover {
+  background: #b80322 !important;
+}
+.collection-title.collection-fake:active {
+  transform: translateY(1px);
+}
+
+/* VULGAR → naranja ladrillo + letra negra */
+.collection-title.collection-vulgar {
+  background: #d35400 !important;   /* naranja ladrillo */
+  color: #000 !important;
+  border-color: #d35400 !important;
+}
+
+.collection-title.collection-vulgar:hover {
+  background: #bb4a00 !important;
+}
+.collection-title.collection-vulgar:active {
+  transform: translateY(1px);
+}
 
 /* Media */
 .media{
