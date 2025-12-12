@@ -101,15 +101,15 @@ body.no-scroll {
 .actions button{
   padding:6px 10px;
   border-radius:12px;
-  border:1px solid transparent;
+  border:1px solid #000;
   background:transparent;
   color:inherit; font-weight:600; cursor:pointer;
   font-size: clamp(12px, 3.4vw, 16px);
 }
-.actions button.active{ background: #d643ff; color:#000; }
+.actions button.active{ background: transparent; color:#000;}
 .actions .theme{ background:#e5e7eb; }
-:host.dark .actions .theme{ background:#1f2937; }
-.actions .cart{ position:relative; background:rgba(250,204,21,.15); }
+:host.dark .actions .theme{ background:transparent; }
+.actions .cart{ position:relative; background:transparent; }
 .badge{
   position:absolute;
   top: 4px; right: 4px;          /* dentro del botón */
